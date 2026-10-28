@@ -288,3 +288,4 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
     </div>
   );
 }
+
