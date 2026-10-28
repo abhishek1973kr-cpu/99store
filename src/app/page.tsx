@@ -10,8 +10,10 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { CheckoutModal } from "@/components/CheckoutModal";
 import { OrderSuccessModal } from "@/components/OrderSuccessModal";
 import { TrackOrderModal } from "@/components/TrackOrderModal";
+import { HomeReviewsShowcase } from "@/components/HomeReviewsShowcase";
+import { MobileQuickBar } from "@/components/MobileQuickBar";
 import { Footer } from "@/components/Footer";
-import { Sparkles, SlidersHorizontal, ShieldCheck, Feather, Crown, Layers } from "lucide-react";
+import { Sparkles, SlidersHorizontal, ShieldCheck, Crown, Layers } from "lucide-react";
 
 const CATEGORIES = ["All Ornaments", "Ladies Ornaments", "Gents Ornaments"] as const;
 
@@ -65,20 +67,20 @@ export default function StorefrontPage() {
         {/* Hero Section */}
         <Hero onExploreClick={scrollToCatalog} />
 
-        {/* Catalog Section */}
-        <section ref={catalogRef} id="catalog" className="py-12 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Catalog Section - Airy, Spacious, Luxurious */}
+        <section ref={catalogRef} id="catalog" className="py-12 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-cream-300">
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold-600 mb-1">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold-600 mb-2">
                 <Crown className="w-3.5 h-3.5" />
                 <span>The Royal Ornaments Archive</span>
               </div>
-              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-charcoal-900">
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-charcoal-900 tracking-tight">
                 Ladies & Gents Ornaments • Wholesale ₹99
               </h2>
-              <p className="text-xs sm:text-sm text-charcoal-600 mt-1">
-                Displaying {filteredProducts.length} {filteredProducts.length === 1 ? "article" : "articles"} in vault • Original MRP ₹349 • 5+ High-Res Views Per Item
+              <p className="text-xs sm:text-sm text-charcoal-600 mt-2 font-light">
+                Displaying {filteredProducts.length} {filteredProducts.length === 1 ? "creation" : "creations"} in vault • Benchmark Retail MRP ₹349 • 5+ High-Res Views Per Item
               </p>
             </div>
 
@@ -91,7 +93,7 @@ export default function StorefrontPage() {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
                 aria-label="Sort products by"
-                className="text-xs font-medium py-2 px-3 bg-white border border-cream-300 rounded text-charcoal-850 focus:border-gold-500 focus:outline-none"
+                className="text-xs font-medium py-2.5 px-3.5 bg-white border border-cream-300 rounded text-charcoal-850 focus:border-gold-500 focus:outline-none shadow-xs"
               >
                 <option value="featured">Featured Collection</option>
                 <option value="rating">Highest Rated</option>
@@ -102,22 +104,22 @@ export default function StorefrontPage() {
           </div>
 
           {/* Category Filter Pills (Ladies vs Gents vs All) */}
-          <div className="py-6 flex items-center gap-3 overflow-x-auto no-scrollbar">
+          <div className="py-6 sm:py-8 flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar">
             {CATEGORIES.map((cat) => {
               const count = cat === "All Ornaments" ? products.length : cat === "Ladies Ornaments" ? ladiesCount : gentsCount;
               return (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`text-xs px-5 py-2.5 rounded-full font-semibold whitespace-nowrap transition-all uppercase tracking-wider flex items-center gap-2 ${
+                  className={`text-xs px-5 sm:px-6 py-3 rounded-full font-semibold whitespace-nowrap transition-all uppercase tracking-wider flex items-center gap-2 ${
                     selectedCategory === cat
-                      ? "bg-charcoal-900 text-cream-100 shadow-sm ring-1 ring-gold-400/40"
-                      : "bg-cream-200/80 text-charcoal-700 hover:bg-cream-300 hover:text-charcoal-900 border border-cream-300"
+                      ? "bg-charcoal-900 text-cream-100 shadow-md ring-1 ring-gold-400/40"
+                      : "bg-white text-charcoal-700 hover:bg-cream-200 hover:text-charcoal-900 border border-cream-300 shadow-xs"
                   }`}
                 >
                   <span>{cat}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                    selectedCategory === cat ? "bg-gold-500 text-charcoal-900 font-bold" : "bg-cream-300 text-charcoal-700"
+                  <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
+                    selectedCategory === cat ? "bg-gold-500 text-charcoal-900" : "bg-cream-200 text-charcoal-700"
                   }`}>
                     {count}
                   </span>
@@ -126,9 +128,9 @@ export default function StorefrontPage() {
             })}
           </div>
 
-          {/* Product Grid */}
+          {/* Product Grid - Airy, spacious mobile & desktop responsive layout */}
           {filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 sm:gap-8 pt-2">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
@@ -149,7 +151,7 @@ export default function StorefrontPage() {
                   setSelectedCategory("All Ornaments");
                   setSearchQuery("");
                 }}
-                className="px-5 py-2 bg-charcoal-900 text-cream-100 text-xs uppercase tracking-wider font-semibold rounded"
+                className="px-5 py-2.5 bg-charcoal-900 text-cream-100 text-xs uppercase tracking-wider font-semibold rounded"
               >
                 Clear All Filters
               </button>
@@ -158,47 +160,50 @@ export default function StorefrontPage() {
         </section>
 
         {/* Philosophy & Provenance Banner */}
-        <section id="philosophy" className="py-16 bg-cream-200/60 border-t border-b border-cream-300">
+        <section id="philosophy" className="py-16 sm:py-20 bg-cream-200/60 border-t border-b border-cream-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              <div className="space-y-3">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10">
+              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
                   <Crown className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl font-bold text-charcoal-900">
                   Wholesale Direct Pricing
                 </h3>
-                <p className="text-xs text-charcoal-600 leading-relaxed">
-                  Traditional jewelry showrooms mark up jewelry prices up to 500% to offset retail rents. We sell our entire collection directly at an unbeatable flat wholesale rate of ₹99 (MRP ₹349).
+                <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed font-light">
+                  Traditional jewelry showrooms mark up jewelry prices up to 500% to offset retail rents. We sell our entire collection directly at an unbeatable flat wholesale rate of <strong>₹99</strong> (benchmark MRP ₹349).
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
                   <Layers className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl font-bold text-charcoal-900">
                   5+ Perspectives Per Piece
                 </h3>
-                <p className="text-xs text-charcoal-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed font-light">
                   Every single ornament in our vault is photographed across minimum 5 high-resolution perspectives: macro stone setting, side clasp closure, styling scale, and royal packaging view.
                 </p>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl font-bold text-charcoal-900">
                   Instant Dual-Panel Sync
                 </h3>
-                <p className="text-xs text-charcoal-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed font-light">
                   Engineered with an immediate real-time shared state. When store administrators add, edit, or restock an ornament in the Admin Panel, it instantly updates on the live storefront.
                 </p>
               </div>
             </div>
           </div>
         </section>
+
+        {/* Homepage Bottom Section: Interactive Customer Feedback & Reviews Showcase */}
+        <HomeReviewsShowcase />
       </main>
 
       {/* Global Interactive Modals & Drawers */}
@@ -208,7 +213,10 @@ export default function StorefrontPage() {
       <OrderSuccessModal />
       <TrackOrderModal />
 
-      {/* Classic Footer */}
+      {/* Mobile Specialization: Luxury Docked Bottom Quick Bar */}
+      <MobileQuickBar />
+
+      {/* Classic Luxury Footer with Address & Interactive Policies */}
       <Footer />
     </div>
   );

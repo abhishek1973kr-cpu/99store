@@ -133,35 +133,35 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
 
-          {/* Action Buttons: Clean "View" + "Add" */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Action Buttons: Clean "View" + "Add" (Spacious Mobile Touch Targets) */}
+          <div className="grid grid-cols-2 gap-2.5 pt-1">
             <button
               onClick={handleOpenDetails}
-              className="w-full py-2.5 px-3 rounded text-xs font-semibold uppercase tracking-wider bg-cream-100 hover:bg-cream-200 border border-cream-300 text-charcoal-850 hover:border-gold-400 transition-all flex items-center justify-center gap-1.5"
+              className="w-full min-h-[44px] sm:min-h-[40px] py-2.5 px-3 rounded text-xs font-semibold uppercase tracking-wider bg-cream-100 hover:bg-cream-200 border border-cream-300 text-charcoal-850 hover:border-gold-400 active:scale-98 transition-all flex items-center justify-center gap-1.5 shadow-xs"
             >
-              <Eye className="w-3.5 h-3.5 text-gold-600" />
+              <Eye className="w-4 h-4 text-gold-600 shrink-0" />
               <span>View</span>
             </button>
 
             <button
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              className={`w-full py-2.5 px-3 rounded text-xs font-semibold uppercase tracking-wider border transition-all flex items-center justify-center gap-1.5 ${
+              className={`w-full min-h-[44px] sm:min-h-[40px] py-2.5 px-3 rounded text-xs font-semibold uppercase tracking-wider border active:scale-98 transition-all flex items-center justify-center gap-1.5 shadow-xs ${
                 addedAnimation
                   ? "bg-emerald-700 border-emerald-700 text-white"
                   : product.stock === 0
                   ? "bg-cream-200 text-charcoal-400 border-cream-300 cursor-not-allowed"
-                  : "bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 hover:text-gold-300 shadow-sm border-charcoal-900"
+                  : "bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 hover:text-gold-300 border-charcoal-900"
               }`}
             >
               {addedAnimation ? (
                 <>
-                  <Check className="w-3.5 h-3.5" />
+                  <Check className="w-4 h-4 shrink-0" />
                   <span>Added</span>
                 </>
               ) : (
                 <>
-                  <ShoppingBag className="w-3.5 h-3.5 text-gold-400" />
+                  <ShoppingBag className="w-4 h-4 text-gold-400 shrink-0" />
                   <span>Add</span>
                 </>
               )}
