@@ -26,15 +26,53 @@ export function Header({ onSearchChange }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-md border-b border-cream-300">
-      {/* Top Banner Announcement */}
-      <div className="bg-charcoal-900 text-cream-100 text-xs py-2 px-4 text-center tracking-widest uppercase flex items-center justify-center gap-3">
-        <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-        <span>
-          Exclusive Ornaments Vault • <span className="line-through text-cream-400">MRP ₹349</span>{" "}
-          <strong className="text-gold-400 font-semibold">Wholesale Flat ₹99</strong> • Ladies & Gents Royal Collection
-        </span>
-        <span className="hidden md:inline-block text-gold-400/60">•</span>
-        <span className="hidden md:inline-block text-cream-300">Insured Pan-India Transit</span>
+      {/* 1. Top Scrolling Announcement Ticker (Continuous Smooth Marquee) */}
+      <div className="bg-charcoal-900 text-cream-100 text-xs py-2.5 overflow-hidden border-b border-charcoal-800 shadow-xs relative select-none">
+        <div className="animate-marquee flex items-center whitespace-nowrap">
+          {/* Repeating sequence 1 */}
+          <div className="flex items-center gap-8 px-4 font-medium tracking-wider">
+            <span className="flex items-center gap-2">
+              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+            </span>
+            <span className="text-gold-500/70">✦</span>
+            <span className="flex items-center gap-2">
+              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+            </span>
+            <span className="text-gold-500/70">✦</span>
+            <span className="flex items-center gap-2">
+              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+            </span>
+            <span className="text-gold-500/70">✦</span>
+          </div>
+
+          {/* Repeating sequence 2 (for seamless loop) */}
+          <div className="flex items-center gap-8 px-4 font-medium tracking-wider">
+            <span className="flex items-center gap-2">
+              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+            </span>
+            <span className="text-gold-500/70">✦</span>
+            <span className="flex items-center gap-2">
+              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+            </span>
+            <span className="text-gold-500/70">✦</span>
+            <span className="flex items-center gap-2">
+              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+            </span>
+            <span className="text-gold-500/70">✦</span>
+          </div>
+        </div>
       </div>
 
       {/* Main Header Container */}

@@ -280,3 +280,4 @@ export function resetCentralVault(): DatabaseSchema {
   writeDbFile(resetDb);
   return resetDb;
 }
+
