@@ -76,7 +76,7 @@ export default function StorefrontPage() {
                 <Crown className="w-3.5 h-3.5" />
                 <span>The Royal Ornaments Archive</span>
               </div>
-              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-charcoal-900 tracking-tight">
+              <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-charcoal-900 tracking-tight break-words">
                 Ladies & Gents Ornaments • Wholesale ₹99
               </h2>
               <p className="text-xs sm:text-sm text-charcoal-600 mt-2 font-light">

@@ -1,4 +1,31 @@
-import { Product, Order } from "@/types";
+import { Product, Order, HeroSlide } from "@/types";
+
+export const DEFAULT_HERO_SLIDES: HeroSlide[] = [
+  {
+    id: "slide-1",
+    imageUrl: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=1920&q=80",
+    title: "Royal Ladies Kundan, Polki & Pearl Haar",
+    subtitle: "Hand-embossed 24K gold micro-plated necklaces with matching jhumkas & bridal ensembles",
+    badge: "Ladies Royal Ornaments",
+    category: "Ladies Ornaments",
+  },
+  {
+    id: "slide-2",
+    imageUrl: "https://images.unsplash.com/photo-1611591475152-478311396060?auto=format&fit=crop&w=1920&q=80",
+    title: "Imperial Gents Sovereign Kadas & Rings",
+    subtitle: "Heavyweight dual lion torque kadas, signet onyx rings & royal kalgi safa brooches",
+    badge: "Gents Royal Ornaments",
+    category: "Gents Ornaments",
+  },
+  {
+    id: "slide-3",
+    imageUrl: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=1920&q=80",
+    title: "Imperial Craftsmanship • Wholesale Flat ₹99",
+    subtitle: "Benchmark retail MRP ₹349 offered exclusively at flat ₹99 with minimum 5 high-res views",
+    badge: "Special Wholesale Deal",
+    category: "All Ornaments",
+  },
+];
 
 // Curated high-resolution jewelry & ornament image sets for minimum 5 images per product
 export const INITIAL_PRODUCTS: Product[] = [

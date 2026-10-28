@@ -1,8 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef } from "react";
-import { Product, Order, CartItem, OrderStatus, PaymentMethod, ShippingAddress, DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE, Review } from "@/types";
-import { INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/data/initialData";
+import { Product, Order, CartItem, OrderStatus, PaymentMethod, ShippingAddress, DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE, Review, HeroSlide } from "@/types";
+import { INITIAL_PRODUCTS, INITIAL_ORDERS, DEFAULT_HERO_SLIDES } from "@/data/initialData";
 import {
   fetchOrdersApi,
   createOrderApi,
@@ -14,6 +14,8 @@ import {
   deleteProductApi,
   addReviewApi,
   resetVaultApi,
+  fetchHeroSlidesApi,
+  updateHeroSlidesApi,
 } from "@/lib/api";
 
 export const STORAGE_KEYS = {
@@ -115,6 +117,11 @@ interface StoreContextType {
   recentOrderAlert: Order | null;
   clearOrderAlert: () => void;
   isInitialized: boolean;
+
+  // Hero Background Slides
+  heroSlides: HeroSlide[];
+  updateHeroSlides: (slides: HeroSlide[]) => Promise<void>;
+  resetHeroSlides: () => Promise<void>;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -123,6 +130,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [orders, setOrders] = useState<Order[]>(INITIAL_ORDERS);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(DEFAULT_HERO_SLIDES);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // Modals & UI States
@@ -196,6 +204,18 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     return products;
   }, [cacheProductsLocally, products]);
 
+  // Central Database Fetch: Hero Slides
+  const syncHeroSlidesFromCloud = useCallback(async () => {
+    try {
+      const slides = await fetchHeroSlidesApi();
+      if (slides && Array.isArray(slides) && slides.length > 0) {
+        setHeroSlides(slides);
+      }
+    } catch (e) {
+      console.warn("Could not sync hero slides from cloud:", e);
+    }
+  }, []);
+
   // Direct sync function accessible by components
   const refreshOrdersFromStorage = useCallback(async (): Promise<Order[]> => {
     return await syncOrdersFromCloud();
@@ -223,6 +243,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     // B. Immediate fetch from Cloud / Server API
     syncOrdersFromCloud();
     syncProductsFromCloud();
+    syncHeroSlidesFromCloud();
 
     // C. Setup BroadcastChannel for cross-tab sync
     try {
@@ -252,6 +273,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     const handleFocus = () => {
       syncOrdersFromCloud();
       syncProductsFromCloud();
+      syncHeroSlidesFromCloud();
     };
     window.addEventListener("focus", handleFocus);
 
@@ -259,6 +281,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       if (!document.hidden) {
         syncOrdersFromCloud();
         syncProductsFromCloud();
+        syncHeroSlidesFromCloud();
       }
     };
     document.addEventListener("visibilitychange", handleVisibility);
@@ -271,7 +294,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         broadcastRef.current.close();
       }
     };
-  }, [syncOrdersFromCloud, syncProductsFromCloud]);
+  }, [syncOrdersFromCloud, syncProductsFromCloud, syncHeroSlidesFromCloud]);
 
   // Save Cart to local storage
   useEffect(() => {
@@ -595,6 +618,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setRecentOrderAlert(null);
   }, []);
 
+  const updateHeroSlides = useCallback(async (slides: HeroSlide[]) => {
+    setHeroSlides(slides);
+    await updateHeroSlidesApi(slides);
+  }, []);
+
+  const resetHeroSlides = useCallback(async () => {
+    setHeroSlides(DEFAULT_HERO_SLIDES);
+    await updateHeroSlidesApi(DEFAULT_HERO_SLIDES);
+  }, []);
+
   // Computed Cart Totals
   const cartTotal = useMemo(() => {
     return cart.reduce((sum, item) => sum + (item.product.price || DEFAULT_WHOLESALE_PRICE) * item.quantity, 0);
@@ -652,6 +685,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     recentOrderAlert,
     clearOrderAlert,
     isInitialized,
+    heroSlides,
+    updateHeroSlides,
+    resetHeroSlides,
   };
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;

@@ -94,3 +94,13 @@ export interface StoreStats {
   ladiesCount: number;
   gentsCount: number;
 }
+
+export interface HeroSlide {
+  id: string;
+  imageUrl: string;
+  title: string;
+  subtitle: string;
+  badge: string;
+  category?: string;
+}
+

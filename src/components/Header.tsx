@@ -79,12 +79,12 @@ export function Header({ onSearchChange }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           {/* Left: Brand Identity */}
-          <div className="flex items-center gap-6">
-            <Link href="/" className="group flex flex-col">
-              <span className="font-serif text-2xl sm:text-3xl tracking-wider text-charcoal-900 font-bold group-hover:text-gold-600 transition-colors">
+          <div className="flex items-center gap-2 sm:gap-6 min-w-0">
+            <Link href="/" className="group flex flex-col min-w-0">
+              <span className="font-serif text-xl sm:text-2xl md:text-3xl tracking-wider text-charcoal-900 font-bold group-hover:text-gold-600 transition-colors truncate">
                 ATELIER 99
               </span>
-              <span className="text-[10px] uppercase tracking-[0.3em] text-gold-600 font-medium -mt-1">
+              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-gold-600 font-medium -mt-0.5 whitespace-nowrap">
                 Royal Ornaments Vault
               </span>
             </Link>

@@ -1,4 +1,4 @@
-import { Order, OrderStatus, Product, Review } from "@/types";
+import { Order, OrderStatus, Product, Review, HeroSlide } from "@/types";
 
 // Helper to determine base URL (works seamlessly in client browser, mobile browser, and server)
 const API_BASE = "";
@@ -154,4 +154,39 @@ export async function resetVaultApi(): Promise<boolean> {
     return false;
   }
 }
+
+export async function fetchHeroSlidesApi(): Promise<HeroSlide[] | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/banners`, {
+      method: "GET",
+      cache: "no-store",
+      headers: {
+        "Cache-Control": "no-cache",
+      },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.slides || [];
+  } catch (err) {
+    console.warn("fetchHeroSlidesApi network error:", err);
+    return null;
+  }
+}
+
+export async function updateHeroSlidesApi(slides: HeroSlide[]): Promise<HeroSlide[] | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/banners`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ slides }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return data.slides || null;
+  } catch (err) {
+    console.warn("updateHeroSlidesApi network error:", err);
+    return null;
+  }
+}
+
 

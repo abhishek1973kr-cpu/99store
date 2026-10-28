@@ -113,11 +113,11 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Price & Action Row (MRP ₹349 Struck-Through vs Wholesale ₹99) */}
         <div className="pt-3 border-t border-cream-200">
-          <div className="flex items-baseline justify-between mb-3">
+          <div className="flex flex-wrap items-baseline justify-between gap-1 mb-3">
             <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-[11px] uppercase tracking-wider text-charcoal-500 font-medium">Wholesale:</span>
-                <span className="font-serif text-2xl font-bold text-charcoal-900">
+              <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2">
+                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-charcoal-500 font-medium">Wholesale:</span>
+                <span className="font-serif text-xl sm:text-2xl font-bold text-charcoal-900">
                   ₹{product.price}
                 </span>
                 <span className="text-xs text-charcoal-400 line-through font-serif">
@@ -128,7 +128,7 @@ export function ProductCard({ product }: ProductCardProps) {
                 Save ₹{product.mrp - product.price} (Direct Artisan Deal)
               </span>
             </div>
-            <span className="text-[10px] uppercase tracking-wider text-gold-700 font-semibold bg-gold-400/15 px-2 py-1 rounded border border-gold-400/30">
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gold-700 font-semibold bg-gold-400/15 px-2 py-0.5 sm:py-1 rounded border border-gold-400/30">
               Wholesale Rate
             </span>
           </div>

@@ -9,44 +9,47 @@ interface AdminLoginProps {
 }
 
 export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
+  const [username, setUsername] = useState("1234");
+  const [password, setPassword] = useState("4321");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const doLogin = (userVal: string, passVal: string) => {
     setError("");
+    const u = userVal.trim();
+    const p = passVal.trim();
 
-    if (!username.trim() || !password.trim()) {
-      setError("Please provide both Username and Password.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    // Simulated luxury verification
-    setTimeout(() => {
-      // Hardcoded Authentication Credentials: Username: 1234, Password: 4321
-      if (username.trim() === "1234" && password.trim() === "4321") {
-        if (typeof window !== "undefined") {
+    if (u === "1234" && p === "4321") {
+      setIsLoading(true);
+      if (typeof window !== "undefined") {
+        try {
           localStorage.setItem("the_99_ornaments_admin_auth", "true");
           sessionStorage.setItem("the_99_ornaments_admin_auth", "true");
+          document.cookie = "the_99_ornaments_admin_auth=true; path=/; max-age=86400";
+        } catch (e) {
+          console.warn("Storage restricted", e);
         }
+      }
+      setTimeout(() => {
         setIsLoading(false);
         onLoginSuccess();
-      } else {
-        setIsLoading(false);
-        setError("Invalid Vault Credentials. Please enter valid Username and Password.");
-      }
-    }, 600);
+      }, 200);
+    } else {
+      setIsLoading(false);
+      setError("Invalid Vault Credentials. Use Username: 1234 and Password: 4321");
+    }
   };
 
-  const handleFillDemoCredentials = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    doLogin(username, password);
+  };
+
+  const handleInstantLogin = () => {
     setUsername("1234");
     setPassword("4321");
-    setError("");
+    doLogin("1234", "4321");
   };
 
   return (
@@ -150,12 +153,23 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
             </div>
             <button
               type="button"
-              onClick={handleFillDemoCredentials}
-              className="text-[11px] font-semibold text-gold-700 hover:text-gold-800 underline uppercase tracking-wider"
+              onClick={handleInstantLogin}
+              className="text-[11px] font-bold text-gold-700 hover:text-gold-900 bg-gold-400/20 px-2.5 py-1 rounded border border-gold-400/40 uppercase tracking-wider"
             >
-              Auto-Fill
+              1-Click Enter
             </button>
           </div>
+
+          {/* 1-Click Fast Access Button */}
+          <button
+            type="button"
+            onClick={handleInstantLogin}
+            disabled={isLoading}
+            className="w-full py-2.5 px-4 bg-gold-400 hover:bg-gold-500 text-charcoal-900 text-xs font-bold uppercase tracking-wider rounded border border-gold-500 shadow transition-all flex items-center justify-center gap-2 active:scale-98"
+          >
+            <Sparkles className="w-4 h-4 text-charcoal-900" />
+            <span>Instant One-Click Admin Unlock</span>
+          </button>
 
           {/* Submit Button */}
           <button

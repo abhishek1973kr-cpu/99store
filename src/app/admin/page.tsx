@@ -5,6 +5,7 @@ import { AdminHeader } from "@/components/admin/AdminHeader";
 import { AdminLogin } from "@/components/admin/AdminLogin";
 import { OrdersTable } from "@/components/admin/OrdersTable";
 import { ProductManagement } from "@/components/admin/ProductManagement";
+import { HeroSlidesManagement } from "@/components/admin/HeroSlidesManagement";
 import { useStore } from "@/context/StoreContext";
 import {
   Package,
@@ -14,26 +15,43 @@ import {
   X,
   Lock,
   ArrowRight,
+  Sparkles,
+  Sliders,
 } from "lucide-react";
 import Link from "next/link";
 import { DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE } from "@/types";
 
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const [activeTab, setActiveTab] = useState<"orders" | "products" | "policy">("orders");
+  const [activeTab, setActiveTab] = useState<"orders" | "products" | "hero" | "policy">("orders");
   const { recentOrderAlert, clearOrderAlert, orders, products, refreshOrdersFromStorage } = useStore();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const auth =
-        localStorage.getItem("the_99_ornaments_admin_auth") === "true" ||
-        sessionStorage.getItem("the_99_ornaments_admin_auth") === "true";
-      setIsAuthenticated(auth);
-      if (auth) {
-        refreshOrdersFromStorage();
+    try {
+      if (typeof window !== "undefined") {
+        const auth =
+          localStorage.getItem("the_99_ornaments_admin_auth") === "true" ||
+          sessionStorage.getItem("the_99_ornaments_admin_auth") === "true" ||
+          document.cookie.includes("the_99_ornaments_admin_auth=true");
+        setIsAuthenticated(!!auth);
+        if (auth) {
+          refreshOrdersFromStorage();
+        }
+      } else {
+        setIsAuthenticated(false);
       }
+    } catch {
+      setIsAuthenticated(false);
     }
   }, [refreshOrdersFromStorage]);
+
+  // Safety fallback: Never leave user stuck on spinner on mobile devices
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsAuthenticated((prev) => (prev === null ? false : prev));
+    }, 200);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
@@ -42,13 +60,16 @@ export default function AdminPage() {
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
-      localStorage.removeItem("the_99_ornaments_admin_auth");
-      sessionStorage.removeItem("the_99_ornaments_admin_auth");
+      try {
+        localStorage.removeItem("the_99_ornaments_admin_auth");
+        sessionStorage.removeItem("the_99_ornaments_admin_auth");
+        document.cookie = "the_99_ornaments_admin_auth=; path=/; max-age=0";
+      } catch {}
     }
     setIsAuthenticated(false);
   };
 
-  // Prevent hydration flash
+  // Prevent hydration flash (capped at 200ms)
   if (isAuthenticated === null) {
     return (
       <div className="min-h-screen bg-charcoal-900 flex items-center justify-center">
@@ -120,7 +141,7 @@ export default function AdminPage() {
 
           <button
             onClick={() => setActiveTab("products")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded text-xs font-semibold uppercase tracking-wider transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
               activeTab === "products"
                 ? "bg-charcoal-900 text-cream-100 shadow-sm"
                 : "bg-cream-200 text-charcoal-700 hover:bg-cream-300 hover:text-charcoal-900"
@@ -131,8 +152,20 @@ export default function AdminPage() {
           </button>
 
           <button
+            onClick={() => setActiveTab("hero")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
+              activeTab === "hero"
+                ? "bg-charcoal-900 text-cream-100 shadow-sm"
+                : "bg-cream-200 text-charcoal-700 hover:bg-cream-300 hover:text-charcoal-900"
+            }`}
+          >
+            <Sliders className="w-4 h-4 text-gold-400" />
+            <span>Hero Background & Banners (3 Images)</span>
+          </button>
+
+          <button
             onClick={() => setActiveTab("policy")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded text-xs font-semibold uppercase tracking-wider transition-all ${
+            className={`flex items-center gap-2 px-4 py-2.5 rounded text-xs font-semibold uppercase tracking-wider transition-all whitespace-nowrap ${
               activeTab === "policy"
                 ? "bg-charcoal-900 text-cream-100 shadow-sm"
                 : "bg-cream-200 text-charcoal-700 hover:bg-cream-300 hover:text-charcoal-900"
@@ -149,7 +182,10 @@ export default function AdminPage() {
         {/* Tab 2: Product Management */}
         {activeTab === "products" && <ProductManagement />}
 
-        {/* Tab 3: Flat Pricing Policy & Architectural Overview */}
+        {/* Tab 3: Hero Slides & Backgrounds */}
+        {activeTab === "hero" && <HeroSlidesManagement />}
+
+        {/* Tab 4: Flat Pricing Policy & Architectural Overview */}
         {activeTab === "policy" && (
           <div className="bg-white p-6 sm:p-8 rounded border border-cream-300 shadow-sm space-y-6 max-w-4xl">
             <div className="flex items-center gap-3 pb-4 border-b border-cream-200">

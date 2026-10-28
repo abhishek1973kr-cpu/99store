@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { Product, Order, OrderStatus, DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE } from "@/types";
-import { INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/data/initialData";
+import { Product, Order, OrderStatus, DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE, HeroSlide } from "@/types";
+import { INITIAL_PRODUCTS, INITIAL_ORDERS, DEFAULT_HERO_SLIDES } from "@/data/initialData";
 
 // Central persistent data directory on the server
 const DATA_DIR = path.join(process.cwd(), ".data");
@@ -10,6 +10,7 @@ const DB_FILE = path.join(DATA_DIR, "central_vault_db.json");
 interface DatabaseSchema {
   products: Product[];
   orders: Order[];
+  heroSlides?: HeroSlide[];
   lastUpdated: string;
 }
 
@@ -17,6 +18,7 @@ interface DatabaseSchema {
 let memoryStore: DatabaseSchema = {
   products: INITIAL_PRODUCTS,
   orders: INITIAL_ORDERS,
+  heroSlides: DEFAULT_HERO_SLIDES,
   lastUpdated: new Date().toISOString(),
 };
 
@@ -30,6 +32,7 @@ function ensureDbFile(): DatabaseSchema {
       const initialDb: DatabaseSchema = {
         products: INITIAL_PRODUCTS,
         orders: INITIAL_ORDERS,
+        heroSlides: DEFAULT_HERO_SLIDES,
         lastUpdated: new Date().toISOString(),
       };
       fs.writeFileSync(DB_FILE, JSON.stringify(initialDb, null, 2), "utf8");
@@ -42,6 +45,9 @@ function ensureDbFile(): DatabaseSchema {
       throw new Error("Empty DB file");
     }
     const data = JSON.parse(raw) as DatabaseSchema;
+    if (!data.heroSlides || !Array.isArray(data.heroSlides) || data.heroSlides.length === 0) {
+      data.heroSlides = DEFAULT_HERO_SLIDES;
+    }
     memoryStore = data;
     return data;
   } catch (err) {
@@ -275,9 +281,36 @@ export function resetCentralVault(): DatabaseSchema {
   const resetDb: DatabaseSchema = {
     products: INITIAL_PRODUCTS,
     orders: INITIAL_ORDERS,
+    heroSlides: DEFAULT_HERO_SLIDES,
     lastUpdated: new Date().toISOString(),
   };
   writeDbFile(resetDb);
   return resetDb;
 }
+
+// ==========================================
+// HERO BACKGROUND SLIDES OPERATIONS
+// ==========================================
+
+export function getCentralHeroSlides(): HeroSlide[] {
+  const db = ensureDbFile();
+  if (!db.heroSlides || !Array.isArray(db.heroSlides) || db.heroSlides.length === 0) {
+    return DEFAULT_HERO_SLIDES;
+  }
+  return db.heroSlides;
+}
+
+export function updateCentralHeroSlides(slides: HeroSlide[]): HeroSlide[] {
+  const db = ensureDbFile();
+  const updatedSlides = slides && slides.length > 0 ? slides : DEFAULT_HERO_SLIDES;
+  
+  writeDbFile({
+    ...db,
+    heroSlides: updatedSlides,
+    lastUpdated: new Date().toISOString(),
+  });
+
+  return updatedSlides;
+}
+
 
