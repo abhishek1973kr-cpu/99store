@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useMemo, useCall
 import { Product, Order, CartItem, OrderStatus, PaymentMethod, ShippingAddress, DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE, Review } from "@/types";
 import { INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/data/initialData";
 
-const STORAGE_KEYS = {
+export const STORAGE_KEYS = {
   PRODUCTS: "the_99_ornaments_products_v2",
   ORDERS: "the_99_ornaments_orders_v2",
   CART: "the_99_ornaments_cart_v2",
@@ -13,6 +13,46 @@ const STORAGE_KEYS = {
 interface SyncMessage {
   type: "PRODUCTS_UPDATED" | "ORDERS_UPDATED" | "NEW_ORDER";
   payload?: any;
+}
+
+// Safely retrieve orders directly from disk/localStorage
+export function getStoredOrdersFromDisk(): Order[] {
+  if (typeof window === "undefined") return INITIAL_ORDERS;
+  try {
+    const raw =
+      localStorage.getItem(STORAGE_KEYS.ORDERS) ||
+      localStorage.getItem("the_99_ornaments_orders") ||
+      localStorage.getItem("the_99_store_orders");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not read orders from localStorage, fallback to default", e);
+  }
+  return INITIAL_ORDERS;
+}
+
+// Safely retrieve products directly from disk/localStorage
+export function getStoredProductsFromDisk(): Product[] {
+  if (typeof window === "undefined") return INITIAL_PRODUCTS;
+  try {
+    const raw =
+      localStorage.getItem(STORAGE_KEYS.PRODUCTS) ||
+      localStorage.getItem("the_99_ornaments_products") ||
+      localStorage.getItem("the_99_store_products");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (e) {
+    console.warn("Could not read products from localStorage, fallback to default", e);
+  }
+  return INITIAL_PRODUCTS;
 }
 
 interface StoreContextType {
@@ -30,6 +70,7 @@ interface StoreContextType {
   placeOrder: (customer: ShippingAddress, items: CartItem[], paymentMethod: PaymentMethod) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   deleteOrder: (orderId: string) => void;
+  refreshOrdersFromStorage: () => Order[];
 
   // Cart
   cart: CartItem[];
@@ -86,24 +127,84 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   // Broadcast Channel for live real-time sync across multiple tabs
   const broadcastRef = React.useRef<BroadcastChannel | null>(null);
 
-  // 1. Initial Load from LocalStorage
+  // Direct sync function to reload orders from disk
+  const refreshOrdersFromStorage = useCallback((): Order[] => {
+    const freshest = getStoredOrdersFromDisk();
+    setOrders(freshest);
+    return freshest;
+  }, []);
+
+  // Helper to persist & broadcast orders
+  const saveOrders = useCallback((updated: Order[], newOrder?: Order) => {
+    setOrders(updated);
+    if (typeof window !== "undefined") {
+      try {
+        const serialized = JSON.stringify(updated);
+        localStorage.setItem(STORAGE_KEYS.ORDERS, serialized);
+        // Fallback keys to ensure zero cross-version or migration drop
+        localStorage.setItem("the_99_ornaments_orders", serialized);
+        localStorage.setItem("the_99_store_orders", serialized);
+      } catch (e) {
+        console.error("Failed to write orders to localStorage", e);
+      }
+
+      // 1. Dispatch custom event for same-tab / same-window components
+      try {
+        window.dispatchEvent(
+          new CustomEvent("ornaments_orders_updated", {
+            detail: newOrder || updated,
+          })
+        );
+      } catch (err) {
+        console.warn("Could not dispatch ornaments_orders_updated event", err);
+      }
+
+      // 2. Broadcast across tabs via BroadcastChannel
+      try {
+        if (newOrder) {
+          broadcastRef.current?.postMessage({ type: "NEW_ORDER", payload: newOrder });
+        } else {
+          broadcastRef.current?.postMessage({ type: "ORDERS_UPDATED" });
+        }
+      } catch (err) {
+        console.warn("Broadcast postMessage error", err);
+      }
+    }
+  }, []);
+
+  // Helper to persist & broadcast products
+  const saveProducts = useCallback((updated: Product[]) => {
+    setProducts(updated);
+    if (typeof window !== "undefined") {
+      try {
+        const serialized = JSON.stringify(updated);
+        localStorage.setItem(STORAGE_KEYS.PRODUCTS, serialized);
+        localStorage.setItem("the_99_ornaments_products", serialized);
+        localStorage.setItem("the_99_store_products", serialized);
+      } catch (e) {
+        console.error("Failed to write products to localStorage", e);
+      }
+
+      try {
+        window.dispatchEvent(new CustomEvent("ornaments_products_updated", { detail: updated }));
+      } catch {}
+
+      try {
+        broadcastRef.current?.postMessage({ type: "PRODUCTS_UPDATED" });
+      } catch {}
+    }
+  }, []);
+
+  // 1. Initial Load from LocalStorage & Live Event Handlers
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     try {
-      const storedProducts = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-      if (storedProducts) {
-        setProducts(JSON.parse(storedProducts));
-      } else {
-        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(INITIAL_PRODUCTS));
-      }
+      const storedProds = getStoredProductsFromDisk();
+      setProducts(storedProds);
 
-      const storedOrders = localStorage.getItem(STORAGE_KEYS.ORDERS);
-      if (storedOrders) {
-        setOrders(JSON.parse(storedOrders));
-      } else {
-        localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(INITIAL_ORDERS));
-      }
+      const storedOrds = getStoredOrdersFromDisk();
+      setOrders(storedOrds);
 
       const storedCart = localStorage.getItem(STORAGE_KEYS.CART);
       if (storedCart) {
@@ -123,16 +224,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       channel.onmessage = (event: MessageEvent<SyncMessage>) => {
         const { type, payload } = event.data;
         if (type === "PRODUCTS_UPDATED") {
-          const fresh = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
-          if (fresh) setProducts(JSON.parse(fresh));
+          const freshProds = getStoredProductsFromDisk();
+          setProducts(freshProds);
         } else if (type === "ORDERS_UPDATED" || type === "NEW_ORDER") {
-          const fresh = localStorage.getItem(STORAGE_KEYS.ORDERS);
-          if (fresh) {
-            const parsed = JSON.parse(fresh);
-            setOrders(parsed);
-            if (type === "NEW_ORDER" && payload) {
-              setRecentOrderAlert(payload);
-            }
+          const freshOrds = getStoredOrdersFromDisk();
+          setOrders(freshOrds);
+          if (type === "NEW_ORDER" && payload) {
+            setRecentOrderAlert(payload);
           }
         }
       };
@@ -140,23 +238,52 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       console.warn("BroadcastChannel not supported in this environment", err);
     }
 
-    // Storage event fallback
+    // Multi-Window / Storage event listener
     const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.PRODUCTS && e.newValue) {
-        setProducts(JSON.parse(e.newValue));
-      } else if (e.key === STORAGE_KEYS.ORDERS && e.newValue) {
-        setOrders(JSON.parse(e.newValue));
+      if (e.key === STORAGE_KEYS.ORDERS || e.key === "the_99_ornaments_orders") {
+        const freshOrds = getStoredOrdersFromDisk();
+        setOrders(freshOrds);
+      } else if (e.key === STORAGE_KEYS.PRODUCTS || e.key === "the_99_ornaments_products") {
+        const freshProds = getStoredProductsFromDisk();
+        setProducts(freshProds);
       }
     };
     window.addEventListener("storage", handleStorageChange);
 
+    // In-Window Custom Event listener
+    const handleCustomOrdersUpdate = (e: Event) => {
+      const freshOrds = getStoredOrdersFromDisk();
+      setOrders(freshOrds);
+      const customDetail = (e as CustomEvent).detail;
+      if (customDetail && !Array.isArray(customDetail) && customDetail.id) {
+        setRecentOrderAlert(customDetail);
+      }
+    };
+    window.addEventListener("ornaments_orders_updated", handleCustomOrdersUpdate);
+
+    // Tab visibility & focus change handlers (instant sync when switching tabs)
+    const handleTabFocus = () => {
+      refreshOrdersFromStorage();
+    };
+    window.addEventListener("focus", handleTabFocus);
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refreshOrdersFromStorage();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
     return () => {
       window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("ornaments_orders_updated", handleCustomOrdersUpdate);
+      window.removeEventListener("focus", handleTabFocus);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (broadcastRef.current) {
         broadcastRef.current.close();
       }
     };
-  }, []);
+  }, [refreshOrdersFromStorage]);
 
   // Save Cart state to localStorage
   useEffect(() => {
@@ -168,74 +295,49 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     }
   }, [cart, isInitialized]);
 
-  // Helper to persist & broadcast products
-  const saveProducts = useCallback((updated: Product[]) => {
-    setProducts(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(updated));
-      broadcastRef.current?.postMessage({ type: "PRODUCTS_UPDATED" });
-    }
-  }, []);
-
-  // Helper to persist & broadcast orders
-  const saveOrders = useCallback((updated: Order[], newOrder?: Order) => {
-    setOrders(updated);
-    if (typeof window !== "undefined") {
-      localStorage.setItem(STORAGE_KEYS.ORDERS, JSON.stringify(updated));
-      if (newOrder) {
-        broadcastRef.current?.postMessage({ type: "NEW_ORDER", payload: newOrder });
-      } else {
-        broadcastRef.current?.postMessage({ type: "ORDERS_UPDATED" });
-      }
-    }
-  }, []);
-
   // PRODUCT CRUD
   const addProduct = useCallback(
     (productData: Omit<Product, "id" | "createdAt" | "rating" | "reviewsCount">) => {
-      // Ensure at least 5 images exist
       const validImages = productData.images && productData.images.length >= 5
         ? productData.images
         : [
             productData.image || "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
-            ...(productData.images || []),
             "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
             "https://images.unsplash.com/photo-1611591475152-478311396060?auto=format&fit=crop&w=800&q=80",
             "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
             "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80",
-          ].slice(0, 5);
+          ];
 
       const newProduct: Product = {
         ...productData,
-        id: `orn-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 5)}`,
+        id: `orn-custom-${Date.now()}`,
         mrp: productData.mrp || DEFAULT_MRP,
         price: productData.price || DEFAULT_WHOLESALE_PRICE,
-        images: validImages,
-        image: validImages[0],
         rating: 5.0,
         reviewsCount: 1,
+        images: validImages,
+        image: validImages[0],
         createdAt: new Date().toISOString(),
       };
-      const updated: Product[] = [newProduct, ...products];
+
+      const diskProds = getStoredProductsFromDisk();
+      const updated = [newProduct, ...diskProds.filter((p) => p.id !== newProduct.id)];
       saveProducts(updated);
       return newProduct;
     },
-    [products, saveProducts]
+    [saveProducts]
   );
 
   const updateProduct = useCallback(
     (id: string, updates: Partial<Product>) => {
-      const updated: Product[] = products.map((p) => {
+      const diskProds = getStoredProductsFromDisk();
+      const updated = diskProds.map((p) => {
         if (p.id === id) {
-          const mergedImages = updates.images && updates.images.length > 0 ? updates.images : p.images;
-          return {
-            ...p,
-            ...updates,
-            images: mergedImages,
-            image: mergedImages[0] || p.image,
-            mrp: updates.mrp || p.mrp || DEFAULT_MRP,
-            price: updates.price || p.price || DEFAULT_WHOLESALE_PRICE,
-          };
+          const merged = { ...p, ...updates };
+          if (updates.images && updates.images.length > 0) {
+            merged.image = updates.images[0];
+          }
+          return merged;
         }
         return p;
       });
@@ -245,19 +347,20 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (found) setActiveProductModal(found);
       }
     },
-    [products, saveProducts, activeProductModal]
+    [saveProducts, activeProductModal]
   );
 
   const deleteProduct = useCallback(
     (id: string) => {
-      const updated = products.filter((p) => p.id !== id);
+      const diskProds = getStoredProductsFromDisk();
+      const updated = diskProds.filter((p) => p.id !== id);
       saveProducts(updated);
       setCart((prev) => prev.filter((item) => item.product.id !== id));
       if (activeProductModal?.id === id) {
         setActiveProductModal(null);
       }
     },
-    [products, saveProducts, activeProductModal]
+    [saveProducts, activeProductModal]
   );
 
   const resetCatalog = useCallback(() => {
@@ -283,7 +386,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         verified: true,
       };
 
-      const updated = products.map((p) => {
+      const diskProds = getStoredProductsFromDisk();
+      const updated = diskProds.map((p) => {
         if (p.id === productId) {
           const existingReviews = p.reviews || [];
           const updatedReviews = [newReview, ...existingReviews];
@@ -306,7 +410,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         if (updatedProd) setActiveProductModal(updatedProd);
       }
     },
-    [products, saveProducts, activeProductModal]
+    [saveProducts, activeProductModal]
   );
 
   // CART OPERATIONS
@@ -357,7 +461,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setIsCheckoutOpen(true);
   }, [cart]);
 
-  // ORDERS OPERATIONS
+  // ORDERS OPERATIONS - 100% Guaranteed Persistent & Live Synchronized
   const placeOrder = useCallback(
     (customer: ShippingAddress, items: CartItem[], paymentMethod: PaymentMethod): Order => {
       const orderItems = items.map((item) => ({
@@ -367,7 +471,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         mrp: item.product.mrp || DEFAULT_MRP,
         price: item.product.price || DEFAULT_WHOLESALE_PRICE,
         quantity: item.quantity,
-        image: item.product.images?.[0] || item.product.image,
+        image: item.product.images?.[0] || item.product.image || "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
         images: item.product.images,
       }));
 
@@ -376,9 +480,9 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       const totalMrp = items.reduce((sum, item) => sum + (item.product.mrp || DEFAULT_MRP) * item.quantity, 0);
       const totalSavings = Math.max(0, totalMrp - totalAmount);
 
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const uniqueSuffix = Date.now().toString().slice(-4) + Math.floor(100 + Math.random() * 900);
       const newOrder: Order = {
-        id: `ORD-99-${randomSuffix}`,
+        id: `ORD-99-${uniqueSuffix}`,
         customer,
         items: orderItems,
         totalAmount,
@@ -393,11 +497,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         updatedAt: new Date().toISOString(),
       };
 
-      const updatedOrders = [newOrder, ...orders];
+      // 1. Read existing orders directly from localStorage to ensure NO overwrite of recent items
+      const existingDiskOrders = getStoredOrdersFromDisk();
+      const updatedOrders = [newOrder, ...existingDiskOrders.filter((o) => o.id !== newOrder.id)];
+
+      // 2. Persist to storage immediately and broadcast
       saveOrders(updatedOrders, newOrder);
 
-      // Decrement stock in products
-      const updatedProducts = products.map((prod) => {
+      // 3. Decrement stock in products
+      const diskProds = getStoredProductsFromDisk();
+      const updatedProducts = diskProds.map((prod) => {
         const boughtItem = items.find((i) => i.product.id === prod.id);
         if (boughtItem) {
           const newStock = Math.max(0, prod.stock - boughtItem.quantity);
@@ -407,24 +516,26 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       });
       saveProducts(updatedProducts);
 
-      // Clear from cart
+      // 4. Remove purchased items from cart
       setCart((prevCart) => {
         const itemIdsInOrder = new Set(items.map((i) => i.product.id));
         return prevCart.filter((c) => !itemIdsInOrder.has(c.product.id));
       });
 
+      // 5. Update user view modal states
       setLastPlacedOrder(newOrder);
       setIsCheckoutOpen(false);
       setIsOrderSuccessOpen(true);
 
       return newOrder;
     },
-    [orders, products, saveOrders, saveProducts]
+    [saveOrders, saveProducts]
   );
 
   const updateOrderStatus = useCallback(
     (orderId: string, status: OrderStatus) => {
-      const updated = orders.map((order) => {
+      const diskOrders = getStoredOrdersFromDisk();
+      const updated = diskOrders.map((order) => {
         if (order.id === orderId) {
           const isDelivered = status === "Delivered";
           return {
@@ -438,28 +549,29 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       });
       saveOrders(updated);
     },
-    [orders, saveOrders]
+    [saveOrders]
   );
 
   const deleteOrder = useCallback(
     (orderId: string) => {
-      const updated = orders.filter((order) => order.id !== orderId);
+      const diskOrders = getStoredOrdersFromDisk();
+      const updated = diskOrders.filter((o) => o.id !== orderId);
       saveOrders(updated);
     },
-    [orders, saveOrders]
+    [saveOrders]
   );
 
   const clearOrderAlert = useCallback(() => {
     setRecentOrderAlert(null);
   }, []);
 
-  // Computed Cart metrics
+  // Computed Cart Totals
   const cartTotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.quantity * (item.product.price || DEFAULT_WHOLESALE_PRICE), 0);
+    return cart.reduce((sum, item) => sum + (item.product.price || DEFAULT_WHOLESALE_PRICE) * item.quantity, 0);
   }, [cart]);
 
   const cartMrpTotal = useMemo(() => {
-    return cart.reduce((sum, item) => sum + item.quantity * (item.product.mrp || DEFAULT_MRP), 0);
+    return cart.reduce((sum, item) => sum + (item.product.mrp || DEFAULT_MRP) * item.quantity, 0);
   }, [cart]);
 
   const cartSavingsTotal = useMemo(() => {
@@ -482,6 +594,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     placeOrder,
     updateOrderStatus,
     deleteOrder,
+    refreshOrdersFromStorage,
     cart,
     addToCart,
     removeFromCart,

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useStore } from "@/context/StoreContext";
 import { Order, OrderStatus } from "@/types";
 import {
@@ -14,25 +14,89 @@ import {
   Printer,
   X,
   Tag,
+  RefreshCw,
+  CheckCircle2,
+  AlertCircle,
+  Building,
 } from "lucide-react";
 
 export function OrdersTable() {
-  const { orders, updateOrderStatus, deleteOrder } = useStore();
+  const { orders, updateOrderStatus, deleteOrder, refreshOrdersFromStorage } = useStore();
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [selectedOrderReceipt, setSelectedOrderReceipt] = useState<Order | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastSyncedTime, setLastSyncedTime] = useState<string>("");
 
-  // Filter orders
+  // 1. Direct Sync on Mount & Event Listeners
+  const handleSyncOrders = useCallback(() => {
+    setIsRefreshing(true);
+    refreshOrdersFromStorage();
+    setLastSyncedTime(new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 400);
+  }, [refreshOrdersFromStorage]);
+
+  useEffect(() => {
+    // Initial mount sync
+    handleSyncOrders();
+
+    // Listen to in-tab custom event
+    const handleCustomUpdate = () => {
+      handleSyncOrders();
+    };
+    window.addEventListener("ornaments_orders_updated", handleCustomUpdate);
+
+    // Listen to cross-tab storage changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key?.includes("orders")) {
+        handleSyncOrders();
+      }
+    };
+    window.addEventListener("storage", handleStorageChange);
+
+    // Sync when tab gets focus or becomes visible
+    const handleFocus = () => {
+      handleSyncOrders();
+    };
+    window.addEventListener("focus", handleFocus);
+
+    const handleVisibility = () => {
+      if (!document.hidden) {
+        handleSyncOrders();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
+    // Polling interval every 2.5 seconds to guarantee 100% zero-miss sync
+    const intervalId = setInterval(() => {
+      refreshOrdersFromStorage();
+    }, 2500);
+
+    return () => {
+      window.removeEventListener("ornaments_orders_updated", handleCustomUpdate);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      clearInterval(intervalId);
+    };
+  }, [handleSyncOrders, refreshOrdersFromStorage]);
+
+  // Safe filter orders
   const filteredOrders = orders.filter((order) => {
     const matchesStatus = statusFilter === "ALL" || order.status === statusFilter;
     const cleanSearch = search.trim().toLowerCase();
-    const matchesSearch =
-      !cleanSearch ||
-      order.id.toLowerCase().includes(cleanSearch) ||
-      order.customer.fullName.toLowerCase().includes(cleanSearch) ||
-      order.customer.phone.toLowerCase().includes(cleanSearch) ||
-      order.customer.city.toLowerCase().includes(cleanSearch);
-    return matchesStatus && matchesSearch;
+    if (!matchesStatus) return false;
+    if (!cleanSearch) return true;
+
+    const idMatch = (order.id || "").toLowerCase().includes(cleanSearch);
+    const nameMatch = (order.customer?.fullName || "").toLowerCase().includes(cleanSearch);
+    const phoneMatch = (order.customer?.phone || "").toLowerCase().includes(cleanSearch);
+    const cityMatch = (order.customer?.city || "").toLowerCase().includes(cleanSearch);
+    const paymentMatch = (order.paymentMethod || "").toLowerCase().includes(cleanSearch);
+
+    return idMatch || nameMatch || phoneMatch || cityMatch || paymentMatch;
   });
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
@@ -54,14 +118,14 @@ export function OrdersTable() {
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal-500" />
           <input
             type="text"
-            placeholder="Search by Customer, Phone, City, or Order ID..."
+            placeholder="Search by Customer, Phone, City, Order ID, or COD..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
           />
         </div>
 
-        {/* Status Filters */}
+        {/* Status Filters & Manual Refresh */}
         <div className="flex items-center gap-2 overflow-x-auto">
           {["ALL", "Pending", "Shipped", "Delivered", "Cancelled"].map((st) => (
             <button
@@ -76,6 +140,16 @@ export function OrdersTable() {
               {st} {st !== "ALL" && `(${orders.filter((o) => o.status === st).length})`}
             </button>
           ))}
+
+          {/* Sync Button */}
+          <button
+            onClick={handleSyncOrders}
+            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded font-medium bg-gold-400 hover:bg-gold-500 text-charcoal-900 transition-all uppercase tracking-wider shadow-xs ml-2 shrink-0"
+            title="Force refresh orders from shared localStorage storage"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
+            <span>Sync</span>
+          </button>
         </div>
       </div>
 
@@ -87,9 +161,14 @@ export function OrdersTable() {
               Live Vault Orders ({filteredOrders.length})
             </h3>
             <span className="text-xs text-charcoal-500">
-              • Real-Time Synchronized Table
+              • Real-Time Centralized Storage Sync
             </span>
           </div>
+          {lastSyncedTime && (
+            <span className="text-[11px] text-charcoal-500">
+              Last synced at <span className="font-mono font-medium">{lastSyncedTime}</span>
+            </span>
+          )}
         </div>
 
         {filteredOrders.length === 0 ? (
@@ -101,13 +180,13 @@ export function OrdersTable() {
             <table className="w-full text-left border-collapse text-xs">
               <thead>
                 <tr className="bg-cream-200/70 border-b border-cream-300 text-[11px] uppercase tracking-wider text-charcoal-700 font-semibold">
-                  <th className="py-3 px-4">Order ID & Timestamp</th>
+                  <th className="py-3 px-4">Order ID & Date</th>
                   <th className="py-3 px-4">Customer Details</th>
-                  <th className="py-3 px-4">Shipping Destination</th>
+                  <th className="py-3 px-4">Complete Shipping Address</th>
                   <th className="py-3 px-4">Reserved Ornaments</th>
-                  <th className="py-3 px-4">Wholesale Total</th>
+                  <th className="py-3 px-4">Wholesale Price (₹99)</th>
                   <th className="py-3 px-4">Payment Method</th>
-                  <th className="py-3 px-4">Status Update</th>
+                  <th className="py-3 px-4">Order Status</th>
                   <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
               </thead>
@@ -115,17 +194,18 @@ export function OrdersTable() {
                 {filteredOrders.map((order) => {
                   return (
                     <tr key={order.id} className="hover:bg-cream-50/80 transition-colors">
-                      {/* 1. Order ID & Timestamp */}
+                      {/* 1. Order ID & Date/Timestamp */}
                       <td className="py-4 px-4 align-top">
                         <span className="font-mono font-bold text-charcoal-900 block text-xs">
                           {order.id}
                         </span>
                         <div className="flex items-center gap-1 text-[11px] text-charcoal-500 mt-1">
-                          <Clock className="w-3 h-3 text-gold-600" />
+                          <Clock className="w-3 h-3 text-gold-600 shrink-0" />
                           <span suppressHydrationWarning>
                             {new Date(order.createdAt).toLocaleDateString("en-IN", {
                               day: "numeric",
                               month: "short",
+                              year: "numeric",
                               hour: "2-digit",
                               minute: "2-digit",
                             })}
@@ -138,51 +218,54 @@ export function OrdersTable() {
                         )}
                       </td>
 
-                      {/* 2. Customer Name & Phone */}
+                      {/* 2. Customer Name & Phone Number */}
                       <td className="py-4 px-4 align-top">
                         <span className="font-serif font-bold text-charcoal-900 block text-sm">
-                          {order.customer.fullName}
+                          {order.customer?.fullName || "Valued Customer"}
                         </span>
                         <a
-                          href={`tel:${order.customer.phone}`}
-                          className="flex items-center gap-1.5 text-xs text-charcoal-700 hover:text-gold-600 mt-1 font-medium"
+                          href={`tel:${order.customer?.phone}`}
+                          className="flex items-center gap-1.5 text-xs text-charcoal-700 hover:text-gold-600 mt-1 font-semibold"
                         >
-                          <Phone className="w-3 h-3 text-gold-600" />
-                          <span>{order.customer.phone}</span>
+                          <Phone className="w-3 h-3 text-gold-600 shrink-0" />
+                          <span>{order.customer?.phone}</span>
                         </a>
-                        {order.customer.email && (
+                        {order.customer?.email && (
                           <span className="text-[11px] text-charcoal-500 block mt-0.5 truncate max-w-[150px]">
                             {order.customer.email}
                           </span>
                         )}
                       </td>
 
-                      {/* 3. Complete Delivery Address */}
+                      {/* 3. Complete Shipping/Delivery Address */}
                       <td className="py-4 px-4 align-top max-w-xs">
                         <div className="flex items-start gap-1.5 text-charcoal-800">
                           <MapPin className="w-3.5 h-3.5 text-gold-600 shrink-0 mt-0.5" />
                           <div className="space-y-0.5 leading-relaxed">
-                            <p className="font-medium">{order.customer.addressLine1}</p>
-                            {order.customer.addressLine2 && (
+                            <p className="font-semibold text-charcoal-900">
+                              {order.customer?.addressLine1}
+                            </p>
+                            {order.customer?.addressLine2 && (
                               <p className="text-charcoal-600">{order.customer.addressLine2}</p>
                             )}
-                            {order.customer.landmark && (
-                              <p className="text-charcoal-500 text-[11px]">
-                                Landmark: {order.customer.landmark}
+                            {order.customer?.landmark && (
+                              <p className="text-charcoal-500 text-[11px] flex items-center gap-1">
+                                <Building className="w-2.5 h-2.5 text-gold-600" />
+                                <span>Near {order.customer.landmark}</span>
                               </p>
                             )}
-                            <p className="font-semibold text-charcoal-900">
-                              {order.customer.city}, {order.customer.state} -{" "}
-                              <span className="font-mono">{order.customer.pincode}</span>
+                            <p className="font-medium text-charcoal-900 text-xs mt-0.5">
+                              {order.customer?.city}, {order.customer?.state} -{" "}
+                              <span className="font-mono font-bold text-charcoal-950">{order.customer?.pincode}</span>
                             </p>
                           </div>
                         </div>
                       </td>
 
-                      {/* 4. Product Details with Multi-Angle Previews */}
+                      {/* 4. Reserved Ornaments & Quantity */}
                       <td className="py-4 px-4 align-top">
                         <div className="space-y-2 max-w-xs">
-                          {order.items.map((it, idx) => (
+                          {order.items?.map((it, idx) => (
                             <div key={idx} className="flex items-center gap-2">
                               <img
                                 src={it.image}
@@ -207,39 +290,48 @@ export function OrdersTable() {
                         </div>
                       </td>
 
-                      {/* 5. Paid Price & Savings */}
+                      {/* 5. Wholesale Total Price (₹99 Model) */}
                       <td className="py-4 px-4 align-top">
                         <div className="space-y-0.5">
-                          <span className="font-serif font-bold text-charcoal-900 text-sm block">
+                          <span className="font-serif font-bold text-charcoal-900 text-base block">
                             ₹{order.totalAmount}
                           </span>
                           <span className="text-[10px] text-charcoal-400 line-through block">
                             MRP ₹{order.totalMrp || order.itemCount * 349}
                           </span>
                           <span className="text-[10px] text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 inline-block">
-                            Saved ₹{order.totalSavings || order.itemCount * 250}
+                            Wholesale ₹99/ea
                           </span>
                         </div>
                       </td>
 
-                      {/* 6. Payment Method & Status */}
+                      {/* 6. Payment Method: Explicit COD or Online Badge */}
                       <td className="py-4 px-4 align-top">
-                        <div className="space-y-1">
-                          {order.paymentMethod === "ONLINE" ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                              <CreditCard className="w-3 h-3" />
-                              <span>Online (Prepaid)</span>
+                        <div className="space-y-1.5">
+                          {order.paymentMethod === "COD" ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-amber-900 bg-amber-100 px-2.5 py-1 rounded-full border border-amber-300 shadow-xs">
+                              <Banknote className="w-3.5 h-3.5 text-amber-700" />
+                              <span>Cash on Delivery (COD)</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                              <Banknote className="w-3 h-3" />
-                              <span>Cash on Delivery</span>
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-900 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300 shadow-xs">
+                              <CreditCard className="w-3.5 h-3.5 text-emerald-700" />
+                              <span>Online (Prepaid)</span>
                             </span>
                           )}
 
-                          <span className="block text-[10px] text-charcoal-500">
-                            Status: <strong>{order.paymentStatus}</strong>
-                          </span>
+                          <div className="flex items-center gap-1 text-[11px] text-charcoal-600">
+                            <span>Status:</span>
+                            <span
+                              className={`font-semibold uppercase tracking-wider text-[10px] px-1.5 py-0.2 rounded ${
+                                order.paymentStatus === "PAID"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-amber-50 text-amber-800 border border-amber-200"
+                              }`}
+                            >
+                              {order.paymentStatus}
+                            </span>
+                          </div>
                         </div>
                       </td>
 
@@ -281,7 +373,7 @@ export function OrdersTable() {
                               onClick={() => handleStatusChange(order.id, "Delivered")}
                               className="text-[10px] uppercase font-semibold text-emerald-700 hover:text-emerald-900 block"
                             >
-                              → Mark Delivered
+                              → Mark Delivered (COD Paid)
                             </button>
                           )}
                         </div>
@@ -338,80 +430,72 @@ export function OrdersTable() {
             </div>
 
             <div className="grid grid-cols-2 gap-4 text-xs">
-              <div className="bg-cream-50 p-3 rounded border border-cream-200">
-                <span className="font-semibold uppercase text-charcoal-500 text-[10px] block">
-                  Consignee / Destination
+              <div className="p-3 bg-cream-50 rounded border border-cream-200 space-y-1">
+                <span className="font-semibold uppercase tracking-wider text-[10px] text-charcoal-500 block">
+                  Delivery Destination
                 </span>
-                <p className="font-serif font-bold text-charcoal-900 text-sm mt-1">
-                  {selectedOrderReceipt.customer.fullName}
-                </p>
-                <p className="text-charcoal-700">{selectedOrderReceipt.customer.addressLine1}</p>
-                {selectedOrderReceipt.customer.addressLine2 && (
-                  <p className="text-charcoal-700">{selectedOrderReceipt.customer.addressLine2}</p>
+                <p className="font-bold text-charcoal-900">{selectedOrderReceipt.customer?.fullName}</p>
+                <p className="text-charcoal-700">{selectedOrderReceipt.customer?.phone}</p>
+                <p className="text-charcoal-600">{selectedOrderReceipt.customer?.addressLine1}</p>
+                {selectedOrderReceipt.customer?.addressLine2 && (
+                  <p className="text-charcoal-600">{selectedOrderReceipt.customer.addressLine2}</p>
                 )}
-                <p className="text-charcoal-800 font-semibold">
-                  {selectedOrderReceipt.customer.city}, {selectedOrderReceipt.customer.state} -{" "}
-                  {selectedOrderReceipt.customer.pincode}
+                {selectedOrderReceipt.customer?.landmark && (
+                  <p className="text-charcoal-500 text-[11px]">Near {selectedOrderReceipt.customer.landmark}</p>
+                )}
+                <p className="font-semibold text-charcoal-900">
+                  {selectedOrderReceipt.customer?.city}, {selectedOrderReceipt.customer?.state} - {selectedOrderReceipt.customer?.pincode}
                 </p>
-                <p className="text-charcoal-600 mt-1">Phone: {selectedOrderReceipt.customer.phone}</p>
               </div>
 
-              <div className="bg-cream-50 p-3 rounded border border-cream-200">
-                <span className="font-semibold uppercase text-charcoal-500 text-[10px] block">
-                  Wholesale Invoice Summary
+              <div className="p-3 bg-cream-50 rounded border border-cream-200 space-y-1">
+                <span className="font-semibold uppercase tracking-wider text-[10px] text-charcoal-500 block">
+                  Payment & Invoice
                 </span>
-                <p className="text-charcoal-800 mt-1">
-                  Payment Method: <strong>{selectedOrderReceipt.paymentMethod}</strong>
+                <p className="font-serif text-lg font-bold text-charcoal-900">
+                  ₹{selectedOrderReceipt.totalAmount}
                 </p>
-                <p className="text-charcoal-800">
-                  Order Status: <strong>{selectedOrderReceipt.status}</strong>
+                <p className="text-charcoal-700 font-semibold">
+                  Method: {selectedOrderReceipt.paymentMethod === "COD" ? "Cash on Delivery" : "Online"}
                 </p>
-                <p className="text-charcoal-800">
-                  Total Collectable:{" "}
-                  <strong className="text-charcoal-900 font-serif text-base">
-                    ₹{selectedOrderReceipt.totalAmount}
-                  </strong>
+                <p className="text-charcoal-500 text-[11px]">
+                  Payment Status: {selectedOrderReceipt.paymentStatus}
                 </p>
-                <p className="text-[11px] text-emerald-800 font-semibold mt-1">
-                  Total Wholesale Savings: ₹{selectedOrderReceipt.totalSavings || 0}
+                <p className="text-charcoal-500 text-[11px]">
+                  Order Status: {selectedOrderReceipt.status}
                 </p>
               </div>
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-charcoal-900">
-                Items In Insured Velvet Box
-              </h4>
-              <div className="border border-cream-200 rounded divide-y divide-cream-100 text-xs">
-                {selectedOrderReceipt.items.map((it, idx) => (
-                  <div key={idx} className="p-2.5 flex items-center justify-between">
+              <span className="font-semibold uppercase tracking-wider text-[10px] text-charcoal-500 block">
+                Manifest Items
+              </span>
+              <div className="divide-y divide-cream-200 border border-cream-200 rounded max-h-48 overflow-y-auto">
+                {selectedOrderReceipt.items?.map((it, idx) => (
+                  <div key={idx} className="p-2.5 flex items-center justify-between text-xs">
                     <div className="flex items-center gap-2">
-                      <img src={it.image} alt={it.name} className="w-8 h-8 object-cover rounded" />
+                      <img src={it.image} alt={it.name} className="w-8 h-8 rounded object-cover" />
                       <div>
-                        <span className="font-serif font-medium text-charcoal-900 block">{it.name}</span>
-                        <span className="text-[10px] text-charcoal-500">{it.category}</span>
+                        <span className="font-medium text-charcoal-900 block">{it.name}</span>
+                        <span className="text-[10px] text-charcoal-500">Qty: {it.quantity}</span>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <span className="font-semibold block">
-                        {it.quantity} × ₹{it.price} = ₹{it.quantity * it.price}
-                      </span>
-                      <span className="text-[10px] text-charcoal-400 line-through">
-                        MRP ₹{it.quantity * it.mrp}
-                      </span>
-                    </div>
+                    <span className="font-serif font-bold text-charcoal-900">
+                      ₹{it.price * it.quantity}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-cream-200">
+            <div className="pt-4 border-t border-cream-300 flex items-center justify-end gap-3">
               <button
                 onClick={() => window.print()}
-                className="px-4 py-2 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs uppercase font-semibold rounded flex items-center gap-2"
+                className="px-4 py-2 bg-charcoal-900 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded flex items-center gap-1.5"
               >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print Dispatch Slip</span>
+                <Printer className="w-3.5 h-3.5 text-gold-400" />
+                <span>Print Slip</span>
               </button>
             </div>
           </div>

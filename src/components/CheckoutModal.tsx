@@ -17,7 +17,7 @@ export function CheckoutModal() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [pincode, setPincode] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("ONLINE");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -67,10 +67,15 @@ export function CheckoutModal() {
       pincode: pincode.trim(),
     };
 
-    setTimeout(() => {
+    try {
+      // Direct call into shared storage state layer
       placeOrder(shippingInfo, checkoutItems, paymentMethod);
+    } catch (err) {
+      console.error("Order submission error:", err);
+      setFormError("Failed to register order. Please try again.");
+    } finally {
       setIsSubmitting(false);
-    }, 1200);
+    }
   };
 
   return (
@@ -138,43 +143,29 @@ export function CheckoutModal() {
                         <div className="flex items-center gap-2 text-[11px] text-charcoal-500">
                           <span>Qty: {item.quantity}</span>
                           <span>•</span>
-                          <span className="text-gold-700 font-medium">{item.product.category}</span>
+                          <span className="text-gold-700 font-medium">₹{item.product.price || DEFAULT_WHOLESALE_PRICE} / pc</span>
+                          <span className="line-through text-charcoal-400">MRP ₹{item.product.mrp || DEFAULT_MRP}</span>
                         </div>
                       </div>
                     </div>
-                    <div className="text-right">
-                      <div className="flex items-baseline gap-1.5 justify-end">
-                        <span className="font-serif font-bold text-charcoal-900 text-sm">
-                          ₹{item.quantity * item.product.price}
-                        </span>
-                        <span className="text-charcoal-400 line-through text-[11px]">
-                          ₹{item.quantity * item.product.mrp}
-                        </span>
-                      </div>
-                      <span className="text-[10px] text-emerald-800 font-medium">
-                        Wholesale Rate
-                      </span>
-                    </div>
+                    <span className="font-serif font-bold text-charcoal-900 text-sm">
+                      ₹{(item.product.price || DEFAULT_WHOLESALE_PRICE) * item.quantity}
+                    </span>
                   </div>
                 );
               })}
             </div>
 
-            <div className="pt-3 border-t border-cream-300/80 flex justify-between items-center text-sm">
-              <div>
-                <span className="text-xs text-charcoal-600 block">Total MRP Value: ₹{totalMrp}</span>
-                <span className="font-medium text-charcoal-900">Total Payable Amount:</span>
-              </div>
-              <span className="font-serif text-2xl font-bold text-charcoal-900">
-                ₹{totalAmount}
-              </span>
+            <div className="pt-2 border-t border-cream-300/80 flex items-center justify-between text-xs font-semibold text-charcoal-900">
+              <span>Wholesale Total Payable</span>
+              <span className="font-serif text-base text-gold-700">₹{totalAmount}</span>
             </div>
           </div>
 
-          {/* Section 2: Delivery & Contact Details */}
+          {/* Section 2: Shipping Destination */}
           <div className="space-y-4">
             <h3 className="font-serif text-base font-bold text-charcoal-900 border-b border-cream-300 pb-2">
-              1. Delivery & Contact Details
+              1. Delivery Destination & Recipient
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -194,7 +185,7 @@ export function CheckoutModal() {
 
               <div>
                 <label className="block text-xs font-semibold uppercase tracking-wider text-charcoal-800 mb-1">
-                  Mobile Number (for SMS Tracking & Courier) *
+                  Mobile Number (for Courier & Tracking) *
                 </label>
                 <input
                   type="tel"
@@ -311,7 +302,41 @@ export function CheckoutModal() {
             </h3>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Option A: Instant Online Payment */}
+              {/* Option A: Cash on Delivery */}
+              <div
+                onClick={() => setPaymentMethod("COD")}
+                className={`p-4 rounded border-2 cursor-pointer transition-all ${
+                  paymentMethod === "COD"
+                    ? "border-charcoal-900 bg-cream-50 ring-1 ring-charcoal-900"
+                    : "border-cream-300 bg-white hover:border-gold-400"
+                }`}
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2">
+                    <Banknote className="w-5 h-5 text-gold-600" />
+                    <span className="font-semibold text-xs uppercase tracking-wider text-charcoal-900">
+                      Cash on Delivery (COD)
+                    </span>
+                  </div>
+                  <div
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      paymentMethod === "COD" ? "border-charcoal-900" : "border-cream-400"
+                    }`}
+                  >
+                    {paymentMethod === "COD" && (
+                      <div className="w-2 h-2 rounded-full bg-charcoal-900" />
+                    )}
+                  </div>
+                </div>
+                <p className="text-xs text-charcoal-600">
+                  Pay cash or UPI scan to courier agent upon doorstep jewelry delivery.
+                </p>
+                <span className="inline-block mt-2 text-[10px] uppercase tracking-wider text-amber-900 bg-amber-50 px-2 py-0.5 rounded font-semibold border border-amber-200">
+                  Zero Extra Fee • Insured Delivery
+                </span>
+              </div>
+
+              {/* Option B: Instant Online Payment */}
               <div
                 onClick={() => setPaymentMethod("ONLINE")}
                 className={`p-4 rounded border-2 cursor-pointer transition-all ${
@@ -342,40 +367,6 @@ export function CheckoutModal() {
                 </p>
                 <span className="inline-block mt-2 text-[10px] uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded font-semibold">
                   Zero Processing Surcharge
-                </span>
-              </div>
-
-              {/* Option B: Cash on Delivery */}
-              <div
-                onClick={() => setPaymentMethod("COD")}
-                className={`p-4 rounded border-2 cursor-pointer transition-all ${
-                  paymentMethod === "COD"
-                    ? "border-charcoal-900 bg-cream-50 ring-1 ring-charcoal-900"
-                    : "border-cream-300 bg-white hover:border-gold-400"
-                }`}
-              >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <Banknote className="w-5 h-5 text-gold-600" />
-                    <span className="font-semibold text-xs uppercase tracking-wider text-charcoal-900">
-                      Cash on Delivery (COD)
-                    </span>
-                  </div>
-                  <div
-                    className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                      paymentMethod === "COD" ? "border-charcoal-900" : "border-cream-400"
-                    }`}
-                  >
-                    {paymentMethod === "COD" && (
-                      <div className="w-2 h-2 rounded-full bg-charcoal-900" />
-                    )}
-                  </div>
-                </div>
-                <p className="text-xs text-charcoal-600">
-                  Pay cash or UPI scan to courier agent upon doorstep jewelry delivery.
-                </p>
-                <span className="inline-block mt-2 text-[10px] uppercase tracking-wider text-charcoal-700 bg-cream-200 px-2 py-0.5 rounded font-medium">
-                  Insured Tamper-Proof Box
                 </span>
               </div>
             </div>

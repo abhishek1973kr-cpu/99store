@@ -21,7 +21,7 @@ import { DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE } from "@/types";
 export default function AdminPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [activeTab, setActiveTab] = useState<"orders" | "products" | "policy">("orders");
-  const { recentOrderAlert, clearOrderAlert, orders, products } = useStore();
+  const { recentOrderAlert, clearOrderAlert, orders, products, refreshOrdersFromStorage } = useStore();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -29,8 +29,16 @@ export default function AdminPage() {
         localStorage.getItem("the_99_ornaments_admin_auth") === "true" ||
         sessionStorage.getItem("the_99_ornaments_admin_auth") === "true";
       setIsAuthenticated(auth);
+      if (auth) {
+        refreshOrdersFromStorage();
+      }
     }
-  }, []);
+  }, [refreshOrdersFromStorage]);
+
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    refreshOrdersFromStorage();
+  };
 
   const handleLogout = () => {
     if (typeof window !== "undefined") {
@@ -51,7 +59,7 @@ export default function AdminPage() {
 
   // Not logged in -> Show Luxury Login Card
   if (!isAuthenticated) {
-    return <AdminLogin onLoginSuccess={() => setIsAuthenticated(true)} />;
+    return <AdminLogin onLoginSuccess={handleLoginSuccess} />;
   }
 
   const pendingOrdersCount = orders.filter((o) => o.status === "Pending").length;
