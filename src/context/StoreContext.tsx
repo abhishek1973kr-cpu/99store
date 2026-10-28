@@ -1,8 +1,20 @@
 "use client";
 
-import React, { createContext, useContext, useEffect, useState, useMemo, useCallback } from "react";
+import React, { createContext, useContext, useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Product, Order, CartItem, OrderStatus, PaymentMethod, ShippingAddress, DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE, Review } from "@/types";
 import { INITIAL_PRODUCTS, INITIAL_ORDERS } from "@/data/initialData";
+import {
+  fetchOrdersApi,
+  createOrderApi,
+  updateOrderStatusApi,
+  deleteOrderApi,
+  fetchProductsApi,
+  createProductApi,
+  updateProductApi,
+  deleteProductApi,
+  addReviewApi,
+  resetVaultApi,
+} from "@/lib/api";
 
 export const STORAGE_KEYS = {
   PRODUCTS: "the_99_ornaments_products_v2",
@@ -15,7 +27,7 @@ interface SyncMessage {
   payload?: any;
 }
 
-// Safely retrieve orders directly from disk/localStorage
+// Local cache reader for instant zero-flash initial render
 export function getStoredOrdersFromDisk(): Order[] {
   if (typeof window === "undefined") return INITIAL_ORDERS;
   try {
@@ -30,12 +42,11 @@ export function getStoredOrdersFromDisk(): Order[] {
       }
     }
   } catch (e) {
-    console.warn("Could not read orders from localStorage, fallback to default", e);
+    console.warn("Could not read orders from local cache, fallback to initial", e);
   }
   return INITIAL_ORDERS;
 }
 
-// Safely retrieve products directly from disk/localStorage
 export function getStoredProductsFromDisk(): Product[] {
   if (typeof window === "undefined") return INITIAL_PRODUCTS;
   try {
@@ -50,7 +61,7 @@ export function getStoredProductsFromDisk(): Product[] {
       }
     }
   } catch (e) {
-    console.warn("Could not read products from localStorage, fallback to default", e);
+    console.warn("Could not read products from local cache, fallback to initial", e);
   }
   return INITIAL_PRODUCTS;
 }
@@ -58,19 +69,19 @@ export function getStoredProductsFromDisk(): Product[] {
 interface StoreContextType {
   // Products
   products: Product[];
-  addProduct: (product: Omit<Product, "id" | "createdAt" | "rating" | "reviewsCount">) => Product;
-  updateProduct: (id: string, updates: Partial<Product>) => void;
-  deleteProduct: (id: string) => void;
-  resetCatalog: () => void;
+  addProduct: (product: Omit<Product, "id" | "createdAt" | "rating" | "reviewsCount">) => Promise<Product>;
+  updateProduct: (id: string, updates: Partial<Product>) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  resetCatalog: () => Promise<void>;
   getProductById: (id: string) => Product | undefined;
-  addReview: (productId: string, review: Omit<Review, "id" | "date" | "verified">) => void;
+  addReview: (productId: string, review: Omit<Review, "id" | "date" | "verified">) => Promise<void>;
 
   // Orders
   orders: Order[];
-  placeOrder: (customer: ShippingAddress, items: CartItem[], paymentMethod: PaymentMethod) => Order;
-  updateOrderStatus: (orderId: string, status: OrderStatus) => void;
-  deleteOrder: (orderId: string) => void;
-  refreshOrdersFromStorage: () => Order[];
+  placeOrder: (customer: ShippingAddress, items: CartItem[], paymentMethod: PaymentMethod) => Promise<Order>;
+  updateOrderStatus: (orderId: string, status: OrderStatus) => Promise<void>;
+  deleteOrder: (orderId: string) => Promise<void>;
+  refreshOrdersFromStorage: () => Promise<Order[]>;
 
   // Cart
   cart: CartItem[];
@@ -124,346 +135,157 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [isTrackOrderOpen, setIsTrackOrderOpen] = useState(false);
   const [recentOrderAlert, setRecentOrderAlert] = useState<Order | null>(null);
 
-  // Broadcast Channel for live real-time sync across multiple tabs
-  const broadcastRef = React.useRef<BroadcastChannel | null>(null);
+  const broadcastRef = useRef<BroadcastChannel | null>(null);
+  const knownOrderIdsRef = useRef<Set<string>>(new Set());
 
-  // Direct sync function to reload orders from disk
-  const refreshOrdersFromStorage = useCallback((): Order[] => {
-    const freshest = getStoredOrdersFromDisk();
-    setOrders(freshest);
-    return freshest;
-  }, []);
-
-  // Helper to persist & broadcast orders
-  const saveOrders = useCallback((updated: Order[], newOrder?: Order) => {
-    setOrders(updated);
+  // Helper to persist & broadcast cache locally
+  const cacheOrdersLocally = useCallback((updated: Order[]) => {
     if (typeof window !== "undefined") {
       try {
         const serialized = JSON.stringify(updated);
         localStorage.setItem(STORAGE_KEYS.ORDERS, serialized);
-        // Fallback keys to ensure zero cross-version or migration drop
         localStorage.setItem("the_99_ornaments_orders", serialized);
-        localStorage.setItem("the_99_store_orders", serialized);
       } catch (e) {
-        console.error("Failed to write orders to localStorage", e);
-      }
-
-      // 1. Dispatch custom event for same-tab / same-window components
-      try {
-        window.dispatchEvent(
-          new CustomEvent("ornaments_orders_updated", {
-            detail: newOrder || updated,
-          })
-        );
-      } catch (err) {
-        console.warn("Could not dispatch ornaments_orders_updated event", err);
-      }
-
-      // 2. Broadcast across tabs via BroadcastChannel
-      try {
-        if (newOrder) {
-          broadcastRef.current?.postMessage({ type: "NEW_ORDER", payload: newOrder });
-        } else {
-          broadcastRef.current?.postMessage({ type: "ORDERS_UPDATED" });
-        }
-      } catch (err) {
-        console.warn("Broadcast postMessage error", err);
+        console.warn("Local storage cache write failed:", e);
       }
     }
   }, []);
 
-  // Helper to persist & broadcast products
-  const saveProducts = useCallback((updated: Product[]) => {
-    setProducts(updated);
+  const cacheProductsLocally = useCallback((updated: Product[]) => {
     if (typeof window !== "undefined") {
       try {
         const serialized = JSON.stringify(updated);
         localStorage.setItem(STORAGE_KEYS.PRODUCTS, serialized);
-        localStorage.setItem("the_99_ornaments_products", serialized);
-        localStorage.setItem("the_99_store_products", serialized);
       } catch (e) {
-        console.error("Failed to write products to localStorage", e);
+        console.warn("Local storage cache write failed:", e);
       }
-
-      try {
-        window.dispatchEvent(new CustomEvent("ornaments_products_updated", { detail: updated }));
-      } catch {}
-
-      try {
-        broadcastRef.current?.postMessage({ type: "PRODUCTS_UPDATED" });
-      } catch {}
     }
   }, []);
 
-  // 1. Initial Load from LocalStorage & Live Event Handlers
+  // Central Database Fetch: Orders
+  const syncOrdersFromCloud = useCallback(async (): Promise<Order[]> => {
+    const cloudOrders = await fetchOrdersApi();
+    if (cloudOrders && Array.isArray(cloudOrders)) {
+      setOrders((prev) => {
+        // Detect if any new order arrived from another phone/device
+        const prevIds = new Set(prev.map((o) => o.id));
+        const newIncoming = cloudOrders.filter((o) => !prevIds.has(o.id));
+        if (newIncoming.length > 0 && prev.length > 0) {
+          // If a new order is detected from an external phone, trigger admin alert toast
+          setRecentOrderAlert(newIncoming[0]);
+        }
+        return cloudOrders;
+      });
+
+      // Update known IDs
+      knownOrderIdsRef.current = new Set(cloudOrders.map((o) => o.id));
+      cacheOrdersLocally(cloudOrders);
+      return cloudOrders;
+    }
+    return orders;
+  }, [cacheOrdersLocally, orders]);
+
+  // Central Database Fetch: Products
+  const syncProductsFromCloud = useCallback(async (): Promise<Product[]> => {
+    const cloudProducts = await fetchProductsApi();
+    if (cloudProducts && Array.isArray(cloudProducts) && cloudProducts.length > 0) {
+      setProducts(cloudProducts);
+      cacheProductsLocally(cloudProducts);
+      return cloudProducts;
+    }
+    return products;
+  }, [cacheProductsLocally, products]);
+
+  // Direct sync function accessible by components
+  const refreshOrdersFromStorage = useCallback(async (): Promise<Order[]> => {
+    return await syncOrdersFromCloud();
+  }, [syncOrdersFromCloud]);
+
+  // 1. Initial Load from Cloud DB + Fast Local Cache Fallback
   useEffect(() => {
     if (typeof window === "undefined") return;
 
-    try {
-      const storedProds = getStoredProductsFromDisk();
-      setProducts(storedProds);
+    // A. Fast initial population from cache
+    const cachedProds = getStoredProductsFromDisk();
+    setProducts(cachedProds);
+    const cachedOrds = getStoredOrdersFromDisk();
+    setOrders(cachedOrds);
+    knownOrderIdsRef.current = new Set(cachedOrds.map((o) => o.id));
 
-      const storedOrds = getStoredOrdersFromDisk();
-      setOrders(storedOrds);
-
-      const storedCart = localStorage.getItem(STORAGE_KEYS.CART);
-      if (storedCart) {
+    const storedCart = localStorage.getItem(STORAGE_KEYS.CART);
+    if (storedCart) {
+      try {
         setCart(JSON.parse(storedCart));
-      }
-    } catch (e) {
-      console.error("Failed to load store data from localStorage", e);
-    } finally {
-      setIsInitialized(true);
+      } catch {}
     }
+    setIsInitialized(true);
 
-    // Initialize BroadcastChannel
+    // B. Immediate fetch from Cloud / Server API
+    syncOrdersFromCloud();
+    syncProductsFromCloud();
+
+    // C. Setup BroadcastChannel for cross-tab sync
     try {
-      const channel = new BroadcastChannel("the_99_ornaments_sync_channel");
+      const channel = new BroadcastChannel("the_99_ornaments_cloud_channel");
       broadcastRef.current = channel;
-
       channel.onmessage = (event: MessageEvent<SyncMessage>) => {
-        const { type, payload } = event.data;
-        if (type === "PRODUCTS_UPDATED") {
-          const freshProds = getStoredProductsFromDisk();
-          setProducts(freshProds);
-        } else if (type === "ORDERS_UPDATED" || type === "NEW_ORDER") {
-          const freshOrds = getStoredOrdersFromDisk();
-          setOrders(freshOrds);
-          if (type === "NEW_ORDER" && payload) {
-            setRecentOrderAlert(payload);
+        if (event.data.type === "ORDERS_UPDATED" || event.data.type === "NEW_ORDER") {
+          syncOrdersFromCloud();
+          if (event.data.payload) {
+            setRecentOrderAlert(event.data.payload);
           }
+        } else if (event.data.type === "PRODUCTS_UPDATED") {
+          syncProductsFromCloud();
         }
       };
-    } catch (err) {
-      console.warn("BroadcastChannel not supported in this environment", err);
+    } catch (e) {
+      console.warn("BroadcastChannel not available:", e);
     }
 
-    // Multi-Window / Storage event listener
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEYS.ORDERS || e.key === "the_99_ornaments_orders") {
-        const freshOrds = getStoredOrdersFromDisk();
-        setOrders(freshOrds);
-      } else if (e.key === STORAGE_KEYS.PRODUCTS || e.key === "the_99_ornaments_products") {
-        const freshProds = getStoredProductsFromDisk();
-        setProducts(freshProds);
-      }
-    };
-    window.addEventListener("storage", handleStorageChange);
+    // D. Multi-Device Real-Time Cloud Polling Loop (Every 2.5s)
+    // Guarantees orders placed from another mobile phone reflect on the admin dashboard!
+    const pollInterval = setInterval(() => {
+      syncOrdersFromCloud();
+    }, 2500);
 
-    // In-Window Custom Event listener
-    const handleCustomOrdersUpdate = (e: Event) => {
-      const freshOrds = getStoredOrdersFromDisk();
-      setOrders(freshOrds);
-      const customDetail = (e as CustomEvent).detail;
-      if (customDetail && !Array.isArray(customDetail) && customDetail.id) {
-        setRecentOrderAlert(customDetail);
-      }
+    // E. Focus and Visibility handlers (re-fetch immediately when opening or switching tabs)
+    const handleFocus = () => {
+      syncOrdersFromCloud();
+      syncProductsFromCloud();
     };
-    window.addEventListener("ornaments_orders_updated", handleCustomOrdersUpdate);
+    window.addEventListener("focus", handleFocus);
 
-    // Tab visibility & focus change handlers (instant sync when switching tabs)
-    const handleTabFocus = () => {
-      refreshOrdersFromStorage();
-    };
-    window.addEventListener("focus", handleTabFocus);
-
-    const handleVisibilityChange = () => {
+    const handleVisibility = () => {
       if (!document.hidden) {
-        refreshOrdersFromStorage();
+        syncOrdersFromCloud();
+        syncProductsFromCloud();
       }
     };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
+    document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
-      window.removeEventListener("storage", handleStorageChange);
-      window.removeEventListener("ornaments_orders_updated", handleCustomOrdersUpdate);
-      window.removeEventListener("focus", handleTabFocus);
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearInterval(pollInterval);
+      window.removeEventListener("focus", handleFocus);
+      document.removeEventListener("visibilitychange", handleVisibility);
       if (broadcastRef.current) {
         broadcastRef.current.close();
       }
     };
-  }, [refreshOrdersFromStorage]);
+  }, [syncOrdersFromCloud, syncProductsFromCloud]);
 
-  // Save Cart state to localStorage
+  // Save Cart to local storage
   useEffect(() => {
     if (!isInitialized || typeof window === "undefined") return;
     try {
       localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(cart));
-    } catch (e) {
-      console.error("Failed to persist cart", e);
-    }
+    } catch {}
   }, [cart, isInitialized]);
 
-  // PRODUCT CRUD
-  const addProduct = useCallback(
-    (productData: Omit<Product, "id" | "createdAt" | "rating" | "reviewsCount">) => {
-      const validImages = productData.images && productData.images.length >= 5
-        ? productData.images
-        : [
-            productData.image || "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1611591475152-478311396060?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
-            "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80",
-          ];
-
-      const newProduct: Product = {
-        ...productData,
-        id: `orn-custom-${Date.now()}`,
-        mrp: productData.mrp || DEFAULT_MRP,
-        price: productData.price || DEFAULT_WHOLESALE_PRICE,
-        rating: 5.0,
-        reviewsCount: 1,
-        images: validImages,
-        image: validImages[0],
-        createdAt: new Date().toISOString(),
-      };
-
-      const diskProds = getStoredProductsFromDisk();
-      const updated = [newProduct, ...diskProds.filter((p) => p.id !== newProduct.id)];
-      saveProducts(updated);
-      return newProduct;
-    },
-    [saveProducts]
-  );
-
-  const updateProduct = useCallback(
-    (id: string, updates: Partial<Product>) => {
-      const diskProds = getStoredProductsFromDisk();
-      const updated = diskProds.map((p) => {
-        if (p.id === id) {
-          const merged = { ...p, ...updates };
-          if (updates.images && updates.images.length > 0) {
-            merged.image = updates.images[0];
-          }
-          return merged;
-        }
-        return p;
-      });
-      saveProducts(updated);
-      if (activeProductModal && activeProductModal.id === id) {
-        const found = updated.find((p) => p.id === id);
-        if (found) setActiveProductModal(found);
-      }
-    },
-    [saveProducts, activeProductModal]
-  );
-
-  const deleteProduct = useCallback(
-    (id: string) => {
-      const diskProds = getStoredProductsFromDisk();
-      const updated = diskProds.filter((p) => p.id !== id);
-      saveProducts(updated);
-      setCart((prev) => prev.filter((item) => item.product.id !== id));
-      if (activeProductModal?.id === id) {
-        setActiveProductModal(null);
-      }
-    },
-    [saveProducts, activeProductModal]
-  );
-
-  const resetCatalog = useCallback(() => {
-    saveProducts(INITIAL_PRODUCTS);
-    saveOrders(INITIAL_ORDERS);
-    setCart([]);
-    localStorage.removeItem(STORAGE_KEYS.CART);
-  }, [saveProducts, saveOrders]);
-
-  const getProductById = useCallback(
-    (id: string) => {
-      return products.find((p) => p.id === id);
-    },
-    [products]
-  );
-
-  const addReview = useCallback(
-    (productId: string, reviewInput: Omit<Review, "id" | "date" | "verified">) => {
-      const newReview: Review = {
-        ...reviewInput,
-        id: `rev-${Date.now()}`,
-        date: new Date().toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
-        verified: true,
-      };
-
-      const diskProds = getStoredProductsFromDisk();
-      const updated = diskProds.map((p) => {
-        if (p.id === productId) {
-          const existingReviews = p.reviews || [];
-          const updatedReviews = [newReview, ...existingReviews];
-          const newReviewsCount = p.reviewsCount + 1;
-          const newRating = Number(((p.rating * p.reviewsCount + reviewInput.rating) / newReviewsCount).toFixed(1));
-          return {
-            ...p,
-            rating: newRating,
-            reviewsCount: newReviewsCount,
-            reviews: updatedReviews,
-          };
-        }
-        return p;
-      });
-
-      saveProducts(updated);
-
-      if (activeProductModal && activeProductModal.id === productId) {
-        const updatedProd = updated.find((p) => p.id === productId);
-        if (updatedProd) setActiveProductModal(updatedProd);
-      }
-    },
-    [saveProducts, activeProductModal]
-  );
-
-  // CART OPERATIONS
-  const addToCart = useCallback((product: Product, quantity = 1) => {
-    setCart((prevCart) => {
-      const existing = prevCart.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prevCart.map((item) =>
-          item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
-            : item
-        );
-      }
-      return [...prevCart, { product, quantity }];
-    });
-    setIsCartOpen(true);
-  }, []);
-
-  const removeFromCart = useCallback((productId: string) => {
-    setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId));
-  }, []);
-
-  const updateCartQuantity = useCallback((productId: string, quantity: number) => {
-    if (quantity <= 0) {
-      setCart((prev) => prev.filter((item) => item.product.id !== productId));
-      return;
-    }
-    setCart((prevCart) =>
-      prevCart.map((item) =>
-        item.product.id === productId ? { ...item, quantity } : item
-      )
-    );
-  }, []);
-
-  const clearCart = useCallback(() => {
-    setCart([]);
-  }, []);
-
-  const buyNow = useCallback((product: Product) => {
-    setCheckoutItems([{ product, quantity: 1 }]);
-    setIsCheckoutOpen(true);
-  }, []);
-
-  const openCheckoutWithCart = useCallback(() => {
-    if (cart.length === 0) return;
-    setCheckoutItems([...cart]);
-    setIsCartOpen(false);
-    setIsCheckoutOpen(true);
-  }, [cart]);
-
-  // ORDERS OPERATIONS - 100% Guaranteed Persistent & Live Synchronized
+  // ==========================================
+  // ORDERS OPERATIONS (CLOUD PERSISTENT)
+  // ==========================================
   const placeOrder = useCallback(
-    (customer: ShippingAddress, items: CartItem[], paymentMethod: PaymentMethod): Order => {
+    async (customer: ShippingAddress, items: CartItem[], paymentMethod: PaymentMethod): Promise<Order> => {
       const orderItems = items.map((item) => ({
         productId: item.product.id,
         name: item.product.name,
@@ -497,69 +319,277 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         updatedAt: new Date().toISOString(),
       };
 
-      // 1. Read existing orders directly from localStorage to ensure NO overwrite of recent items
-      const existingDiskOrders = getStoredOrdersFromDisk();
-      const updatedOrders = [newOrder, ...existingDiskOrders.filter((o) => o.id !== newOrder.id)];
+      // 1. Optimistic local state update
+      setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== newOrder.id)]);
+      cacheOrdersLocally([newOrder, ...orders.filter((o) => o.id !== newOrder.id)]);
 
-      // 2. Persist to storage immediately and broadcast
-      saveOrders(updatedOrders, newOrder);
-
-      // 3. Decrement stock in products
-      const diskProds = getStoredProductsFromDisk();
-      const updatedProducts = diskProds.map((prod) => {
-        const boughtItem = items.find((i) => i.product.id === prod.id);
-        if (boughtItem) {
-          const newStock = Math.max(0, prod.stock - boughtItem.quantity);
-          return { ...prod, stock: newStock };
+      // 2. Transmit to Cloud / Central Server Database
+      try {
+        const savedCloudOrder = await createOrderApi(newOrder);
+        if (savedCloudOrder) {
+          // Notify other tabs
+          broadcastRef.current?.postMessage({ type: "NEW_ORDER", payload: savedCloudOrder });
         }
-        return prod;
-      });
-      saveProducts(updatedProducts);
+      } catch (err) {
+        console.error("Cloud DB order creation error:", err);
+      }
 
-      // 4. Remove purchased items from cart
+      // 3. Clear cart items
       setCart((prevCart) => {
         const itemIdsInOrder = new Set(items.map((i) => i.product.id));
         return prevCart.filter((c) => !itemIdsInOrder.has(c.product.id));
       });
 
-      // 5. Update user view modal states
+      // 4. Update UI modal states
       setLastPlacedOrder(newOrder);
       setIsCheckoutOpen(false);
       setIsOrderSuccessOpen(true);
 
       return newOrder;
     },
-    [saveOrders, saveProducts]
+    [cacheOrdersLocally, orders]
   );
 
   const updateOrderStatus = useCallback(
-    (orderId: string, status: OrderStatus) => {
-      const diskOrders = getStoredOrdersFromDisk();
-      const updated = diskOrders.map((order) => {
-        if (order.id === orderId) {
-          const isDelivered = status === "Delivered";
-          return {
-            ...order,
-            status,
-            updatedAt: new Date().toISOString(),
-            paymentStatus: isDelivered && order.paymentMethod === "COD" ? ("PAID" as const) : order.paymentStatus,
-          };
-        }
-        return order;
-      });
-      saveOrders(updated);
+    async (orderId: string, status: OrderStatus): Promise<void> => {
+      // Optimistic update
+      setOrders((prev) =>
+        prev.map((order) => {
+          if (order.id === orderId) {
+            const isDelivered = status === "Delivered";
+            return {
+              ...order,
+              status,
+              updatedAt: new Date().toISOString(),
+              paymentStatus: isDelivered && order.paymentMethod === "COD" ? "PAID" : order.paymentStatus,
+            };
+          }
+          return order;
+        })
+      );
+
+      // Cloud database update
+      try {
+        await updateOrderStatusApi(orderId, status);
+        broadcastRef.current?.postMessage({ type: "ORDERS_UPDATED" });
+      } catch (err) {
+        console.error("Cloud DB order status update failed:", err);
+      }
     },
-    [saveOrders]
+    []
   );
 
   const deleteOrder = useCallback(
-    (orderId: string) => {
-      const diskOrders = getStoredOrdersFromDisk();
-      const updated = diskOrders.filter((o) => o.id !== orderId);
-      saveOrders(updated);
+    async (orderId: string): Promise<void> => {
+      // Optimistic update
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+
+      // Cloud database delete
+      try {
+        await deleteOrderApi(orderId);
+        broadcastRef.current?.postMessage({ type: "ORDERS_UPDATED" });
+      } catch (err) {
+        console.error("Cloud DB order delete failed:", err);
+      }
     },
-    [saveOrders]
+    []
   );
+
+  // ==========================================
+  // PRODUCTS OPERATIONS (CLOUD PERSISTENT)
+  // ==========================================
+  const addProduct = useCallback(
+    async (productData: Omit<Product, "id" | "createdAt" | "rating" | "reviewsCount">): Promise<Product> => {
+      const validImages = productData.images && productData.images.length >= 5
+        ? productData.images
+        : [
+            productData.image || "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1611591475152-478311396060?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?auto=format&fit=crop&w=800&q=80",
+            "https://images.unsplash.com/photo-1602751584552-8ba73aad10e1?auto=format&fit=crop&w=800&q=80",
+          ];
+
+      const newProduct: Product = {
+        ...productData,
+        id: `orn-cloud-${Date.now()}`,
+        mrp: productData.mrp || DEFAULT_MRP,
+        price: productData.price || DEFAULT_WHOLESALE_PRICE,
+        rating: 5.0,
+        reviewsCount: 1,
+        images: validImages,
+        image: validImages[0],
+        createdAt: new Date().toISOString(),
+      };
+
+      // Optimistic
+      setProducts((prev) => [newProduct, ...prev.filter((p) => p.id !== newProduct.id)]);
+
+      // Cloud
+      try {
+        const saved = await createProductApi(productData);
+        if (saved) {
+          setProducts((prev) => [saved, ...prev.filter((p) => p.id !== saved.id && p.id !== newProduct.id)]);
+          broadcastRef.current?.postMessage({ type: "PRODUCTS_UPDATED" });
+          return saved;
+        }
+      } catch (err) {
+        console.error("Cloud DB product create error:", err);
+      }
+
+      return newProduct;
+    },
+    []
+  );
+
+  const updateProduct = useCallback(
+    async (id: string, updates: Partial<Product>): Promise<void> => {
+      // Optimistic
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (p.id === id) {
+            const merged = { ...p, ...updates };
+            if (updates.images && updates.images.length > 0) {
+              merged.image = updates.images[0];
+            }
+            return merged;
+          }
+          return p;
+        })
+      );
+
+      // Cloud
+      try {
+        await updateProductApi(id, updates);
+        broadcastRef.current?.postMessage({ type: "PRODUCTS_UPDATED" });
+      } catch (err) {
+        console.error("Cloud DB product update error:", err);
+      }
+    },
+    []
+  );
+
+  const deleteProduct = useCallback(
+    async (id: string): Promise<void> => {
+      // Optimistic
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      setCart((prev) => prev.filter((item) => item.product.id !== id));
+
+      // Cloud
+      try {
+        await deleteProductApi(id);
+        broadcastRef.current?.postMessage({ type: "PRODUCTS_UPDATED" });
+      } catch (err) {
+        console.error("Cloud DB product delete error:", err);
+      }
+    },
+    []
+  );
+
+  const addReview = useCallback(
+    async (productId: string, reviewInput: Omit<Review, "id" | "date" | "verified">): Promise<void> => {
+      const newReview: Review = {
+        ...reviewInput,
+        id: `rev-${Date.now()}`,
+        date: new Date().toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" }),
+        verified: true,
+      };
+
+      // Optimistic
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (p.id === productId) {
+            const existingReviews = p.reviews || [];
+            const updatedReviews = [newReview, ...existingReviews];
+            const newReviewsCount = p.reviewsCount + 1;
+            const newRating = Number(((p.rating * p.reviewsCount + reviewInput.rating) / newReviewsCount).toFixed(1));
+            return {
+              ...p,
+              rating: newRating,
+              reviewsCount: newReviewsCount,
+              reviews: updatedReviews,
+            };
+          }
+          return p;
+        })
+      );
+
+      // Cloud
+      try {
+        await addReviewApi(productId, reviewInput);
+        broadcastRef.current?.postMessage({ type: "PRODUCTS_UPDATED" });
+      } catch (err) {
+        console.error("Cloud DB review add error:", err);
+      }
+    },
+    []
+  );
+
+  const resetCatalog = useCallback(async (): Promise<void> => {
+    setProducts(INITIAL_PRODUCTS);
+    setOrders(INITIAL_ORDERS);
+    setCart([]);
+    localStorage.removeItem(STORAGE_KEYS.CART);
+
+    try {
+      await resetVaultApi();
+      broadcastRef.current?.postMessage({ type: "ORDERS_UPDATED" });
+      broadcastRef.current?.postMessage({ type: "PRODUCTS_UPDATED" });
+    } catch (err) {
+      console.error("Cloud DB reset error:", err);
+    }
+  }, []);
+
+  const getProductById = useCallback(
+    (id: string) => {
+      return products.find((p) => p.id === id);
+    },
+    [products]
+  );
+
+  // Cart operations
+  const addToCart = useCallback((product: Product, quantity = 1) => {
+    setCart((prevCart) => {
+      const existing = prevCart.find((item) => item.product.id === product.id);
+      if (existing) {
+        return prevCart.map((item) =>
+          item.product.id === product.id ? { ...item, quantity: item.quantity + quantity } : item
+        );
+      }
+      return [...prevCart, { product, quantity }];
+    });
+    setIsCartOpen(true);
+  }, []);
+
+  const removeFromCart = useCallback((productId: string) => {
+    setCart((prevCart) => prevCart.filter((item) => item.product.id !== productId));
+  }, []);
+
+  const updateCartQuantity = useCallback((productId: string, quantity: number) => {
+    if (quantity <= 0) {
+      setCart((prev) => prev.filter((item) => item.product.id !== productId));
+      return;
+    }
+    setCart((prevCart) =>
+      prevCart.map((item) => (item.product.id === productId ? { ...item, quantity } : item))
+    );
+  }, []);
+
+  const clearCart = useCallback(() => {
+    setCart([]);
+  }, []);
+
+  const buyNow = useCallback((product: Product) => {
+    setCheckoutItems([{ product, quantity: 1 }]);
+    setIsCheckoutOpen(true);
+  }, []);
+
+  const openCheckoutWithCart = useCallback(() => {
+    if (cart.length === 0) return;
+    setCheckoutItems([...cart]);
+    setIsCartOpen(false);
+    setIsCheckoutOpen(true);
+  }, [cart]);
 
   const clearOrderAlert = useCallback(() => {
     setRecentOrderAlert(null);

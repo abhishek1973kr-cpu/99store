@@ -68,8 +68,8 @@ export function CheckoutModal() {
     };
 
     try {
-      // Direct call into shared storage state layer
-      placeOrder(shippingInfo, checkoutItems, paymentMethod);
+      // Direct call into central cloud storage state layer
+      await placeOrder(shippingInfo, checkoutItems, paymentMethod);
     } catch (err) {
       console.error("Order submission error:", err);
       setFormError("Failed to register order. Please try again.");

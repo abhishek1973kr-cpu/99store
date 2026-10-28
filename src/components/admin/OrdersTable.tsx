@@ -29,13 +29,11 @@ export function OrdersTable() {
   const [lastSyncedTime, setLastSyncedTime] = useState<string>("");
 
   // 1. Direct Sync on Mount & Event Listeners
-  const handleSyncOrders = useCallback(() => {
+  const handleSyncOrders = useCallback(async () => {
     setIsRefreshing(true);
-    refreshOrdersFromStorage();
+    await refreshOrdersFromStorage();
     setLastSyncedTime(new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }));
-    setTimeout(() => {
-      setIsRefreshing(false);
-    }, 400);
+    setIsRefreshing(false);
   }, [refreshOrdersFromStorage]);
 
   useEffect(() => {
