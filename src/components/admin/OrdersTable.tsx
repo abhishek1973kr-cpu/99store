@@ -79,7 +79,8 @@ export function OrdersTable() {
       document.removeEventListener("visibilitychange", handleVisibility);
       clearInterval(intervalId);
     };
-  }, [handleSyncOrders, refreshOrdersFromStorage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Safe filter orders
   const filteredOrders = orders.filter((order) => {

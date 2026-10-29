@@ -207,8 +207,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       cacheOrdersLocally(cloudOrders);
       return cloudOrders;
     }
-    return orders;
-  }, [cacheOrdersLocally, orders]);
+    return [];
+  }, [cacheOrdersLocally]);
 
   // Central Database Fetch: Products
   const syncProductsFromCloud = useCallback(async (): Promise<Product[]> => {
@@ -218,8 +218,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       cacheProductsLocally(cloudProducts);
       return cloudProducts;
     }
-    return products;
-  }, [cacheProductsLocally, products]);
+    return [];
+  }, [cacheProductsLocally]);
 
   // Central Database Fetch: Hero Slides
   const syncHeroSlidesFromCloud = useCallback(async () => {
@@ -339,7 +339,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         broadcastRef.current.close();
       }
     };
-  }, [syncOrdersFromCloud, syncProductsFromCloud, syncHeroSlidesFromCloud, cacheOrdersLocally, cacheProductsLocally]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Save Cart to local storage
   useEffect(() => {

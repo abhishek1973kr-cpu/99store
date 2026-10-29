@@ -22,35 +22,37 @@ import Link from "next/link";
 import { DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE } from "@/types";
 
 export default function AdminPage() {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return (
+          localStorage.getItem("the_99_ornaments_admin_auth") === "true" ||
+          sessionStorage.getItem("the_99_ornaments_admin_auth") === "true" ||
+          document.cookie.includes("the_99_ornaments_admin_auth=true")
+        );
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
   const [activeTab, setActiveTab] = useState<"orders" | "products" | "hero" | "policy">("orders");
   const { recentOrderAlert, clearOrderAlert, orders, products, refreshOrdersFromStorage } = useStore();
 
   useEffect(() => {
-    try {
-      if (typeof window !== "undefined") {
+    if (typeof window !== "undefined") {
+      try {
         const auth =
           localStorage.getItem("the_99_ornaments_admin_auth") === "true" ||
           sessionStorage.getItem("the_99_ornaments_admin_auth") === "true" ||
           document.cookie.includes("the_99_ornaments_admin_auth=true");
-        setIsAuthenticated(!!auth);
         if (auth) {
+          setIsAuthenticated(true);
           refreshOrdersFromStorage();
         }
-      } else {
-        setIsAuthenticated(false);
-      }
-    } catch {
-      setIsAuthenticated(false);
+      } catch {}
     }
-  }, [refreshOrdersFromStorage]);
-
-  // Safety fallback: Never leave user stuck on spinner on mobile devices
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsAuthenticated((prev) => (prev === null ? false : prev));
-    }, 200);
-    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleLoginSuccess = () => {
@@ -68,15 +70,6 @@ export default function AdminPage() {
     }
     setIsAuthenticated(false);
   };
-
-  // Prevent hydration flash (capped at 200ms)
-  if (isAuthenticated === null) {
-    return (
-      <div className="min-h-screen bg-charcoal-900 flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-gold-400 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
 
   // Not logged in -> Show Luxury Login Card
   if (!isAuthenticated) {

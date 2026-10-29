@@ -31,10 +31,8 @@ export function AdminLogin({ onLoginSuccess }: AdminLoginProps) {
           console.warn("Storage restricted", e);
         }
       }
-      setTimeout(() => {
-        setIsLoading(false);
-        onLoginSuccess();
-      }, 200);
+      setIsLoading(false);
+      onLoginSuccess();
     } else {
       setIsLoading(false);
       setError("Invalid Vault Credentials. Use Username: 1234 and Password: 4321");
