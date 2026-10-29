@@ -17,6 +17,23 @@ import {
   fetchHeroSlidesApi,
   updateHeroSlidesApi,
 } from "@/lib/api";
+import {
+  saveOrderToFirestore,
+  getOrdersFromFirestore,
+  subscribeToOrdersFromFirestore,
+  updateOrderStatusInFirestore,
+  deleteOrderFromFirestore,
+  getProductsFromFirestore,
+  subscribeToProductsFromFirestore,
+  saveProductToFirestore,
+  updateProductInFirestore,
+  deleteProductFromFirestore,
+  addReviewInFirestore,
+  seedInitialProductsToFirestore,
+  getHeroSlidesFromFirestore,
+  saveHeroSlidesToFirestore,
+} from "@/lib/firestoreService";
+import { isFirebaseConfigured } from "@/lib/firebase";
 
 export const STORAGE_KEYS = {
   PRODUCTS: "the_99_ornaments_products_v2",
@@ -245,7 +262,34 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     syncProductsFromCloud();
     syncHeroSlidesFromCloud();
 
-    // C. Setup BroadcastChannel for cross-tab sync
+    // C. Attach Real-Time Firebase Firestore Listeners (Zero Polling, Instant Multi-Device Sync)
+    const unsubOrders = subscribeToOrdersFromFirestore((cloudOrders) => {
+      if (cloudOrders && Array.isArray(cloudOrders) && cloudOrders.length > 0) {
+        setOrders((prev) => {
+          const prevIds = new Set(prev.map((o) => o.id));
+          const newIncoming = cloudOrders.filter((o) => !prevIds.has(o.id));
+          if (newIncoming.length > 0 && prev.length > 0) {
+            // Trigger live toast alert in admin panel
+            setRecentOrderAlert(newIncoming[0]);
+          }
+          return cloudOrders;
+        });
+        knownOrderIdsRef.current = new Set(cloudOrders.map((o) => o.id));
+        cacheOrdersLocally(cloudOrders);
+      }
+    });
+
+    const unsubProducts = subscribeToProductsFromFirestore((cloudProds) => {
+      if (cloudProds && Array.isArray(cloudProds) && cloudProds.length > 0) {
+        setProducts(cloudProds);
+        cacheProductsLocally(cloudProds);
+      }
+    });
+
+    // Seed products to Firestore if empty
+    seedInitialProductsToFirestore();
+
+    // D. Setup BroadcastChannel for cross-tab sync
     try {
       const channel = new BroadcastChannel("the_99_ornaments_cloud_channel");
       broadcastRef.current = channel;
@@ -263,13 +307,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       console.warn("BroadcastChannel not available:", e);
     }
 
-    // D. Multi-Device Real-Time Cloud Polling Loop (Every 2.5s)
-    // Guarantees orders placed from another mobile phone reflect on the admin dashboard!
+    // E. Multi-Device Real-Time Cloud Polling Loop (Every 2.5s fallback)
     const pollInterval = setInterval(() => {
       syncOrdersFromCloud();
     }, 2500);
 
-    // E. Focus and Visibility handlers (re-fetch immediately when opening or switching tabs)
+    // F. Focus and Visibility handlers (re-fetch immediately when opening or switching tabs)
     const handleFocus = () => {
       syncOrdersFromCloud();
       syncProductsFromCloud();
@@ -287,6 +330,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     document.addEventListener("visibilitychange", handleVisibility);
 
     return () => {
+      if (unsubOrders) unsubOrders();
+      if (unsubProducts) unsubProducts();
       clearInterval(pollInterval);
       window.removeEventListener("focus", handleFocus);
       document.removeEventListener("visibilitychange", handleVisibility);
@@ -294,7 +339,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         broadcastRef.current.close();
       }
     };
-  }, [syncOrdersFromCloud, syncProductsFromCloud, syncHeroSlidesFromCloud]);
+  }, [syncOrdersFromCloud, syncProductsFromCloud, syncHeroSlidesFromCloud, cacheOrdersLocally, cacheProductsLocally]);
 
   // Save Cart to local storage
   useEffect(() => {
@@ -346,7 +391,14 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== newOrder.id)]);
       cacheOrdersLocally([newOrder, ...orders.filter((o) => o.id !== newOrder.id)]);
 
-      // 2. Transmit to Cloud / Central Server Database
+      // 2. Direct write to Firebase Firestore (Real-time Cloud Database)
+      try {
+        await saveOrderToFirestore(newOrder);
+      } catch (fsErr) {
+        console.warn("Direct Firestore order write notice:", fsErr);
+      }
+
+      // 3. Transmit to Cloud / Central Server Database
       try {
         const savedCloudOrder = await createOrderApi(newOrder);
         if (savedCloudOrder) {
@@ -357,13 +409,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         console.error("Cloud DB order creation error:", err);
       }
 
-      // 3. Clear cart items
+      // 4. Clear cart items
       setCart((prevCart) => {
         const itemIdsInOrder = new Set(items.map((i) => i.product.id));
         return prevCart.filter((c) => !itemIdsInOrder.has(c.product.id));
       });
 
-      // 4. Update UI modal states
+      // 5. Update UI modal states
       setLastPlacedOrder(newOrder);
       setIsCheckoutOpen(false);
       setIsOrderSuccessOpen(true);
@@ -391,6 +443,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         })
       );
 
+      // Direct Firestore update
+      try {
+        await updateOrderStatusInFirestore(orderId, status);
+      } catch (fsErr) {
+        console.warn("Direct Firestore status update notice:", fsErr);
+      }
+
       // Cloud database update
       try {
         await updateOrderStatusApi(orderId, status);
@@ -406,6 +465,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     async (orderId: string): Promise<void> => {
       // Optimistic update
       setOrders((prev) => prev.filter((o) => o.id !== orderId));
+
+      // Direct Firestore delete
+      try {
+        await deleteOrderFromFirestore(orderId);
+      } catch (fsErr) {
+        console.warn("Direct Firestore delete notice:", fsErr);
+      }
 
       // Cloud database delete
       try {
@@ -448,6 +514,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       // Optimistic
       setProducts((prev) => [newProduct, ...prev.filter((p) => p.id !== newProduct.id)]);
 
+      // Direct write to Firebase Firestore
+      try {
+        await saveProductToFirestore(newProduct);
+      } catch (fsErr) {
+        console.warn("Direct Firestore product write notice:", fsErr);
+      }
+
       // Cloud
       try {
         const saved = await createProductApi(productData);
@@ -481,6 +554,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         })
       );
 
+      // Direct Firestore update
+      try {
+        await updateProductInFirestore(id, updates);
+      } catch (fsErr) {
+        console.warn("Direct Firestore product update notice:", fsErr);
+      }
+
       // Cloud
       try {
         await updateProductApi(id, updates);
@@ -497,6 +577,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       // Optimistic
       setProducts((prev) => prev.filter((p) => p.id !== id));
       setCart((prev) => prev.filter((item) => item.product.id !== id));
+
+      // Direct Firestore delete
+      try {
+        await deleteProductFromFirestore(id);
+      } catch (fsErr) {
+        console.warn("Direct Firestore product delete notice:", fsErr);
+      }
 
       // Cloud
       try {
@@ -536,6 +623,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
           return p;
         })
       );
+
+      // Direct Firestore add review
+      try {
+        await addReviewInFirestore(productId, reviewInput);
+      } catch (fsErr) {
+        console.warn("Direct Firestore add review notice:", fsErr);
+      }
 
       // Cloud
       try {
@@ -620,6 +714,11 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
   const updateHeroSlides = useCallback(async (slides: HeroSlide[]) => {
     setHeroSlides(slides);
+    try {
+      await saveHeroSlidesToFirestore(slides);
+    } catch (fsErr) {
+      console.warn("Direct Firestore hero slides save notice:", fsErr);
+    }
     await updateHeroSlidesApi(slides);
   }, []);
 

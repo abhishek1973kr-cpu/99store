@@ -66,3 +66,4 @@ export async function POST(req: NextRequest) {
 export async function PUT(req: NextRequest) {
   return POST(req);
 }
+

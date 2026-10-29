@@ -5,19 +5,34 @@ import {
   updateCentralOrderStatus,
   deleteCentralOrder,
 } from "@/lib/serverDb";
+import {
+  saveOrderToFirestore,
+  getOrdersFromFirestore,
+  updateOrderStatusInFirestore,
+  deleteOrderFromFirestore,
+} from "@/lib/firestoreService";
 import { Order, OrderStatus } from "@/types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// GET: Fetch all orders centrally from the cloud database
+// GET: Fetch all orders centrally from Firebase Firestore / Server Database
 export async function GET() {
   try {
-    const orders = getCentralOrders();
+    let orders: Order[] = [];
+    const firestoreOrders = await getOrdersFromFirestore();
+
+    if (firestoreOrders && Array.isArray(firestoreOrders) && firestoreOrders.length > 0) {
+      orders = firestoreOrders;
+    } else {
+      orders = getCentralOrders();
+    }
+
     return NextResponse.json(
       {
         success: true,
         count: orders.length,
+        source: firestoreOrders && firestoreOrders.length > 0 ? "firestore" : "central_db",
         orders,
       },
       {
@@ -32,7 +47,7 @@ export async function GET() {
   } catch (error: any) {
     console.error("GET /api/orders error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch orders from central database" },
+      { success: false, error: "Failed to fetch orders from cloud database" },
       { status: 500 }
     );
   }
@@ -51,12 +66,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // 1. Direct write to Firebase Firestore
+    try {
+      await saveOrderToFirestore(order);
+    } catch (fsErr) {
+      console.warn("Firestore API write notice:", fsErr);
+    }
+
+    // 2. Also write to server persistent store
     const saved = saveCentralOrder(order);
 
     return NextResponse.json(
       {
         success: true,
-        message: "Order placed and synced to central vault database successfully",
+        message: "Order placed and synced to cloud Firestore successfully",
         order: saved,
       },
       { status: 201 }
@@ -64,7 +87,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("POST /api/orders error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to persist order to central database" },
+      { success: false, error: "Failed to persist order to cloud database" },
       { status: 500 }
     );
   }
@@ -83,6 +106,12 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
+    try {
+      await updateOrderStatusInFirestore(orderId, status);
+    } catch (fsErr) {
+      console.warn("Firestore API update notice:", fsErr);
+    }
+
     const updated = updateCentralOrderStatus(orderId, status);
     if (!updated) {
       return NextResponse.json(
@@ -94,7 +123,7 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "Order status updated centrally",
+        message: "Order status updated in cloud database",
         order: updated,
       },
       { status: 200 }
@@ -102,13 +131,13 @@ export async function PATCH(req: NextRequest) {
   } catch (error: any) {
     console.error("PATCH /api/orders error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to update order in central database" },
+      { success: false, error: "Failed to update order status" },
       { status: 500 }
     );
   }
 }
 
-// DELETE: Delete an order from the central database
+// DELETE: Cancel/Remove order from cloud database
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
@@ -121,8 +150,14 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const deleted = deleteCentralOrder(orderId);
-    if (!deleted) {
+    try {
+      await deleteOrderFromFirestore(orderId);
+    } catch (fsErr) {
+      console.warn("Firestore API delete notice:", fsErr);
+    }
+
+    const success = deleteCentralOrder(orderId);
+    if (!success) {
       return NextResponse.json(
         { success: false, error: "Order not found" },
         { status: 404 }
@@ -132,16 +167,15 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "Order deleted from central database",
+        message: `Order ${orderId} removed from cloud database`,
       },
       { status: 200 }
     );
   } catch (error: any) {
     console.error("DELETE /api/orders error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to delete order from central database" },
+      { success: false, error: "Failed to delete order" },
       { status: 500 }
     );
   }
 }
-

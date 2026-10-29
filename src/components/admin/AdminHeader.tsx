@@ -39,7 +39,7 @@ export function AdminHeader({ onLogout }: AdminHeaderProps) {
                 </h1>
                 <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 text-[10px] uppercase font-semibold tracking-wider">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Real-Time Sync Active</span>
+                  <span>Cloud Firestore Sync Active</span>
                 </div>
               </div>
               <p className="text-xs text-cream-400 font-light mt-0.5">

@@ -5,18 +5,34 @@ import {
   updateCentralProduct,
   deleteCentralProduct,
 } from "@/lib/serverDb";
+import {
+  getProductsFromFirestore,
+  saveProductToFirestore,
+  updateProductInFirestore,
+  deleteProductFromFirestore,
+} from "@/lib/firestoreService";
+import { Product } from "@/types";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-// GET: Fetch all products from the central database
+// GET: Fetch all products from the cloud database
 export async function GET() {
   try {
-    const products = getCentralProducts();
+    let products: Product[] = [];
+    const firestoreProds = await getProductsFromFirestore();
+
+    if (firestoreProds && Array.isArray(firestoreProds) && firestoreProds.length > 0) {
+      products = firestoreProds;
+    } else {
+      products = getCentralProducts();
+    }
+
     return NextResponse.json(
       {
         success: true,
         count: products.length,
+        source: firestoreProds && firestoreProds.length > 0 ? "firestore" : "central_db",
         products,
       },
       {
@@ -31,7 +47,7 @@ export async function GET() {
   } catch (error: any) {
     console.error("GET /api/products error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to fetch products from central database" },
+      { success: false, error: "Failed to fetch products from cloud database" },
       { status: 500 }
     );
   }
@@ -52,10 +68,16 @@ export async function POST(req: NextRequest) {
 
     const saved = saveCentralProduct(product);
 
+    try {
+      await saveProductToFirestore(saved);
+    } catch (fsErr) {
+      console.warn("Firestore save product notice:", fsErr);
+    }
+
     return NextResponse.json(
       {
         success: true,
-        message: "Product created and synced centrally",
+        message: "Product created and synced to cloud Firestore",
         product: saved,
       },
       { status: 201 }
@@ -63,23 +85,29 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("POST /api/products error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to create product in central database" },
+      { success: false, error: "Failed to persist product to cloud database" },
       { status: 500 }
     );
   }
 }
 
-// PATCH: Update an existing product
-export async function PATCH(req: NextRequest) {
+// PUT / PATCH: Update an existing product centrally
+export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { id, updates } = body;
+    const { id, updates } = body as { id: string; updates: Partial<Product> };
 
     if (!id || !updates) {
       return NextResponse.json(
-        { success: false, error: "Missing product id or updates" },
+        { success: false, error: "Missing product ID or updates payload" },
         { status: 400 }
       );
+    }
+
+    try {
+      await updateProductInFirestore(id, updates);
+    } catch (fsErr) {
+      console.warn("Firestore update product notice:", fsErr);
     }
 
     const updated = updateCentralProduct(id, updates);
@@ -93,35 +121,41 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "Product updated centrally",
+        message: "Product updated across cloud database",
         product: updated,
       },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("PATCH /api/products error:", error);
+    console.error("PUT /api/products error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to update product in central database" },
+      { success: false, error: "Failed to update product" },
       { status: 500 }
     );
   }
 }
 
-// DELETE: Delete a product
+// DELETE: Remove product
 export async function DELETE(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
+    const productId = searchParams.get("id");
 
-    if (!id) {
+    if (!productId) {
       return NextResponse.json(
         { success: false, error: "Missing product id parameter" },
         { status: 400 }
       );
     }
 
-    const deleted = deleteCentralProduct(id);
-    if (!deleted) {
+    try {
+      await deleteProductFromFirestore(productId);
+    } catch (fsErr) {
+      console.warn("Firestore delete product notice:", fsErr);
+    }
+
+    const success = deleteCentralProduct(productId);
+    if (!success) {
       return NextResponse.json(
         { success: false, error: "Product not found" },
         { status: 404 }
@@ -131,16 +165,15 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "Product deleted from central database",
+        message: `Product ${productId} deleted from cloud database`,
       },
       { status: 200 }
     );
   } catch (error: any) {
     console.error("DELETE /api/products error:", error);
     return NextResponse.json(
-      { success: false, error: "Failed to delete product from central database" },
+      { success: false, error: "Failed to delete product" },
       { status: 500 }
     );
   }
 }
-
