@@ -26,12 +26,14 @@ let app: FirebaseApp | undefined;
 let db: Firestore | undefined;
 
 try {
-  if (getApps().length > 0) {
-    app = getApp();
-  } else {
-    app = initializeApp(firebaseConfig);
+  if (isFirebaseConfigured()) {
+    if (getApps().length > 0) {
+      app = getApp();
+    } else {
+      app = initializeApp(firebaseConfig);
+    }
+    db = getFirestore(app);
   }
-  db = getFirestore(app);
 } catch (error) {
   console.warn("Firebase initialization status:", error);
 }

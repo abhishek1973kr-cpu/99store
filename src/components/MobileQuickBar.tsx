@@ -1,9 +1,8 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
 import { useStore } from "@/context/StoreContext";
-import { Crown, Star, ShoppingBag, Compass, LayoutDashboard } from "lucide-react";
+import { Crown, Star, ShoppingBag, Compass } from "lucide-react";
 
 export function MobileQuickBar() {
   const { cartCount, setIsCartOpen, setIsTrackOrderOpen, isInitialized } = useStore();
@@ -17,7 +16,7 @@ export function MobileQuickBar() {
 
   return (
     <aside aria-label="Mobile Navigation" className="md:hidden fixed bottom-3 inset-x-3 z-40 animate-slideUp">
-      <div className="bg-charcoal-900/95 backdrop-blur-md border border-gold-400/30 rounded-full shadow-2xl px-4 py-2 flex items-center justify-around text-cream-100">
+      <div className="bg-charcoal-900/95 backdrop-blur-md border border-gold-400/30 rounded-full shadow-2xl px-5 py-2 flex items-center justify-around text-cream-100">
         {/* 1. Catalog */}
         <button
           onClick={() => scrollToSection("catalog")}
@@ -39,7 +38,7 @@ export function MobileQuickBar() {
         {/* 3. Shopping Bag (Center Highlight) */}
         <button
           onClick={() => setIsCartOpen(true)}
-          className="relative flex flex-col items-center gap-1 p-2 text-charcoal-900 bg-gold-400 hover:bg-gold-500 rounded-full px-4 -my-1 shadow-md active:scale-95 transition-all"
+          className="relative flex flex-col items-center gap-1 p-2 text-charcoal-900 bg-gold-400 hover:bg-gold-500 rounded-full px-5 -my-1 shadow-md active:scale-95 transition-all"
         >
           <div className="relative">
             <ShoppingBag className="w-4 h-4 text-charcoal-900" />
@@ -60,15 +59,6 @@ export function MobileQuickBar() {
           <Compass className="w-4 h-4 text-gold-400" />
           <span className="text-[10px] font-semibold tracking-wider uppercase">Track</span>
         </button>
-
-        {/* 5. Admin Vault */}
-        <Link
-          href="/admin"
-          className="flex flex-col items-center gap-1 p-2 text-cream-300 hover:text-gold-400 active:scale-95 transition-all"
-        >
-          <LayoutDashboard className="w-4 h-4 text-gold-400" />
-          <span className="text-[10px] font-semibold tracking-wider uppercase">Admin</span>
-        </Link>
       </div>
     </aside>
   );

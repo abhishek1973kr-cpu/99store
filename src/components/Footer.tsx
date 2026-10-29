@@ -105,13 +105,10 @@ export function Footer() {
               </div>
 
               <div className="pt-2">
-                <Link
-                  href="/admin"
-                  className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gold-400 hover:text-gold-300 py-1.5 px-3 rounded bg-charcoal-800 border border-charcoal-700 hover:border-gold-500/50 transition-all"
-                >
-                  <span>Admin Vault Console</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
-                </Link>
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-wider text-gold-400 py-1.5 px-3 rounded bg-charcoal-800 border border-charcoal-700">
+                  <ShieldCheck className="w-3.5 h-3.5 text-gold-400" />
+                  <span>100% Insured Pan-India Transit</span>
+                </span>
               </div>
             </div>
           </div>

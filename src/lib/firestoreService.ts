@@ -29,18 +29,28 @@ const SETTINGS_COLLECTION = "settings";
  * persist immediately in the cloud database.
  */
 export async function saveOrderToFirestore(order: Order): Promise<boolean> {
-  if (!db) {
-    console.warn("Firestore not initialized");
+  if (!isFirebaseConfigured() || !db) {
     return false;
   }
 
   try {
     const orderDocRef = doc(db, ORDERS_COLLECTION, order.id);
-    await setDoc(orderDocRef, {
-      ...order,
-      createdAt: order.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    }, { merge: true });
+    const writePromise = setDoc(
+      orderDocRef,
+      {
+        ...order,
+        createdAt: order.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    );
+
+    // Strict 2-second timeout so user checkout can never hang
+    const timeoutPromise = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error("Firestore write timeout")), 2000)
+    );
+
+    await Promise.race([writePromise, timeoutPromise]);
 
     // Also update product stock in Firestore if items present
     if (order.items && order.items.length > 0) {
@@ -61,7 +71,7 @@ export async function saveOrderToFirestore(order: Order): Promise<boolean> {
 
     return true;
   } catch (error) {
-    console.error("Error saving order to Firestore:", error);
+    console.warn("Firestore save order notice:", error);
     return false;
   }
 }
@@ -70,7 +80,7 @@ export async function saveOrderToFirestore(order: Order): Promise<boolean> {
  * Fetch all orders once from Firestore.
  */
 export async function getOrdersFromFirestore(): Promise<Order[] | null> {
-  if (!db) return null;
+  if (!isFirebaseConfigured() || !db) return null;
 
   try {
     const ordersCol = collection(db, ORDERS_COLLECTION);
@@ -88,7 +98,7 @@ export async function getOrdersFromFirestore(): Promise<Order[] | null> {
 
     return orders;
   } catch (error) {
-    console.error("Error fetching orders from Firestore:", error);
+    console.warn("Firestore fetch orders notice:", error);
     return null;
   }
 }
@@ -102,7 +112,7 @@ export function subscribeToOrdersFromFirestore(
   onOrdersChange: (orders: Order[]) => void,
   onError?: (error: Error) => void
 ): Unsubscribe | null {
-  if (!db) return null;
+  if (!isFirebaseConfigured() || !db) return null;
 
   try {
     const ordersCol = collection(db, ORDERS_COLLECTION);
@@ -135,7 +145,7 @@ export async function updateOrderStatusInFirestore(
   orderId: string,
   status: OrderStatus
 ): Promise<boolean> {
-  if (!db) return false;
+  if (!isFirebaseConfigured() || !db) return false;
 
   try {
     const orderDocRef = doc(db, ORDERS_COLLECTION, orderId);
@@ -145,7 +155,7 @@ export async function updateOrderStatusInFirestore(
     });
     return true;
   } catch (error) {
-    console.error("Error updating order status in Firestore:", error);
+    console.warn("Firestore update order status notice:", error);
     return false;
   }
 }
@@ -154,14 +164,14 @@ export async function updateOrderStatusInFirestore(
  * Delete an order in Firestore.
  */
 export async function deleteOrderFromFirestore(orderId: string): Promise<boolean> {
-  if (!db) return false;
+  if (!isFirebaseConfigured() || !db) return false;
 
   try {
     const orderDocRef = doc(db, ORDERS_COLLECTION, orderId);
     await deleteDoc(orderDocRef);
     return true;
   } catch (error) {
-    console.error("Error deleting order from Firestore:", error);
+    console.warn("Firestore delete order notice:", error);
     return false;
   }
 }
@@ -174,7 +184,7 @@ export async function deleteOrderFromFirestore(orderId: string): Promise<boolean
  * Fetch all products from Firestore.
  */
 export async function getProductsFromFirestore(): Promise<Product[] | null> {
-  if (!db) return null;
+  if (!isFirebaseConfigured() || !db) return null;
 
   try {
     const prodsCol = collection(db, PRODUCTS_COLLECTION);
@@ -191,7 +201,7 @@ export async function getProductsFromFirestore(): Promise<Product[] | null> {
 
     return products;
   } catch (error) {
-    console.error("Error fetching products from Firestore:", error);
+    console.warn("Firestore fetch products notice:", error);
     return null;
   }
 }
@@ -204,7 +214,7 @@ export function subscribeToProductsFromFirestore(
   onProductsChange: (products: Product[]) => void,
   onError?: (error: Error) => void
 ): Unsubscribe | null {
-  if (!db) return null;
+  if (!isFirebaseConfigured() || !db) return null;
 
   try {
     const prodsCol = collection(db, PRODUCTS_COLLECTION);
@@ -235,14 +245,14 @@ export function subscribeToProductsFromFirestore(
  * Save / Create a new product in Firestore.
  */
 export async function saveProductToFirestore(product: Product): Promise<boolean> {
-  if (!db) return false;
+  if (!isFirebaseConfigured() || !db) return false;
 
   try {
     const prodDocRef = doc(db, PRODUCTS_COLLECTION, product.id);
     await setDoc(prodDocRef, product, { merge: true });
     return true;
   } catch (error) {
-    console.error("Error saving product to Firestore:", error);
+    console.warn("Firestore save product notice:", error);
     return false;
   }
 }
@@ -254,14 +264,14 @@ export async function updateProductInFirestore(
   productId: string,
   updates: Partial<Product>
 ): Promise<boolean> {
-  if (!db) return false;
+  if (!isFirebaseConfigured() || !db) return false;
 
   try {
     const prodDocRef = doc(db, PRODUCTS_COLLECTION, productId);
     await updateDoc(prodDocRef, updates);
     return true;
   } catch (error) {
-    console.error("Error updating product in Firestore:", error);
+    console.warn("Firestore update product notice:", error);
     return false;
   }
 }
@@ -270,14 +280,14 @@ export async function updateProductInFirestore(
  * Delete a product from Firestore.
  */
 export async function deleteProductFromFirestore(productId: string): Promise<boolean> {
-  if (!db) return false;
+  if (!isFirebaseConfigured() || !db) return false;
 
   try {
     const prodDocRef = doc(db, PRODUCTS_COLLECTION, productId);
     await deleteDoc(prodDocRef);
     return true;
   } catch (error) {
-    console.error("Error deleting product from Firestore:", error);
+    console.warn("Firestore delete product notice:", error);
     return false;
   }
 }
@@ -289,7 +299,7 @@ export async function addReviewInFirestore(
   productId: string,
   reviewInput: Omit<Review, "id" | "date" | "verified">
 ): Promise<boolean> {
-  if (!db) return false;
+  if (!isFirebaseConfigured() || !db) return false;
 
   try {
     const prodDocRef = doc(db, PRODUCTS_COLLECTION, productId);
@@ -317,7 +327,7 @@ export async function addReviewInFirestore(
 
     return true;
   } catch (error) {
-    console.error("Error adding review in Firestore:", error);
+    console.warn("Firestore add review notice:", error);
     return false;
   }
 }
@@ -326,7 +336,7 @@ export async function addReviewInFirestore(
  * Seed initial curated products to Firestore if collection is empty.
  */
 export async function seedInitialProductsToFirestore(): Promise<void> {
-  if (!db) return;
+  if (!isFirebaseConfigured() || !db) return;
 
   try {
     const prodsCol = collection(db, PRODUCTS_COLLECTION);
@@ -337,10 +347,9 @@ export async function seedInitialProductsToFirestore(): Promise<void> {
       for (const prod of INITIAL_PRODUCTS) {
         await setDoc(doc(db, PRODUCTS_COLLECTION, prod.id), prod);
       }
-      console.log("Firestore seeding complete!");
     }
   } catch (err) {
-    console.warn("Firestore initial seeding skipped or restricted:", err);
+    console.warn("Firestore initial seeding notice:", err);
   }
 }
 
@@ -349,7 +358,7 @@ export async function seedInitialProductsToFirestore(): Promise<void> {
 // ==========================================
 
 export async function getHeroSlidesFromFirestore(): Promise<HeroSlide[] | null> {
-  if (!db) return null;
+  if (!isFirebaseConfigured() || !db) return null;
 
   try {
     const docRef = doc(db, SETTINGS_COLLECTION, "heroSlides");
@@ -365,14 +374,14 @@ export async function getHeroSlidesFromFirestore(): Promise<HeroSlide[] | null> 
 }
 
 export async function saveHeroSlidesToFirestore(slides: HeroSlide[]): Promise<boolean> {
-  if (!db) return false;
+  if (!isFirebaseConfigured() || !db) return false;
 
   try {
     const docRef = doc(db, SETTINGS_COLLECTION, "heroSlides");
     await setDoc(docRef, { slides, updatedAt: new Date().toISOString() }, { merge: true });
     return true;
   } catch (err) {
-    console.error("Could not save hero slides to Firestore:", err);
+    console.warn("Could not save hero slides to Firestore:", err);
     return false;
   }
 }

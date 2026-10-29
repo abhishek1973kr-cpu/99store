@@ -192,10 +192,10 @@ export default function StorefrontPage() {
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl font-bold text-charcoal-900">
-                  Instant Dual-Panel Sync
+                  Live Vault Availability
                 </h3>
                 <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed font-light">
-                  Engineered with an immediate real-time shared state. When store administrators add, edit, or restock an ornament in the Admin Panel, it instantly updates on the live storefront.
+                  Direct artisan-to-connoisseur catalog architecture, ensuring real-time piece availability, instant stock allocation, and genuine handcrafted quality with zero middleman markups.
                 </p>
               </div>
             </div>

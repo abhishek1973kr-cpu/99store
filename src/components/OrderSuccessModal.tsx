@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useEffect } from "react";
-import Link from "next/link";
 import confetti from "canvas-confetti";
 import { useStore } from "@/context/StoreContext";
-import { CheckCircle2, Printer, ExternalLink, ArrowRight, Package, Tag } from "lucide-react";
+import { CheckCircle2, Printer, ArrowRight, Package, Tag, Clock } from "lucide-react";
 
 export function OrderSuccessModal() {
   const { isOrderSuccessOpen, setIsOrderSuccessOpen, lastPlacedOrder } = useStore();
@@ -44,13 +43,13 @@ export function OrderSuccessModal() {
             <CheckCircle2 className="w-8 h-8" />
           </div>
           <span className="text-[11px] uppercase tracking-[0.25em] text-gold-400 font-semibold block mb-1">
-            Ornaments Order Confirmed & Live Synced
+            Exclusive Vault Dispatch Registered
           </span>
           <h2 className="font-serif text-2xl sm:text-3xl font-bold">
-            Thank you, {order.customer.fullName}
+            Order Successfully Confirmed!
           </h2>
           <p className="text-xs sm:text-sm text-cream-300 mt-2 font-light max-w-md mx-auto">
-            Your exclusive jewelry vault dispatch has been registered. Order ID:{" "}
+            Thank you, <span className="text-white font-medium">{order.customer.fullName}</span>. Your order is registered for express dispatch. Order ID:{" "}
             <span className="text-gold-300 font-mono font-semibold">{order.id}</span>
           </p>
         </div>
@@ -153,18 +152,18 @@ export function OrderSuccessModal() {
 
           {/* Actions */}
           <div className="pt-4 border-t border-cream-300 space-y-3">
-            <div className="bg-gold-400/10 border border-gold-400/30 p-3 rounded flex items-center justify-between text-xs">
-              <span className="text-charcoal-800">
-                ⚡ <strong>Instant Sync Active:</strong> This ornament order is now immediately visible in the Admin Orders Management!
-              </span>
-              <Link
-                href="/admin"
-                onClick={() => setIsOrderSuccessOpen(false)}
-                className="text-xs font-semibold uppercase tracking-wider text-charcoal-900 hover:text-gold-700 flex items-center gap-1 underline shrink-0 ml-3"
-              >
-                <span>View in Admin</span>
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Link>
+            <div className="bg-gold-400/10 border border-gold-400/30 p-3.5 rounded flex items-center gap-3 text-xs">
+              <div className="w-8 h-8 rounded-full bg-gold-400/20 text-gold-600 flex items-center justify-center shrink-0">
+                <Clock className="w-4 h-4 text-gold-600" />
+              </div>
+              <div>
+                <p className="font-semibold text-charcoal-900">
+                  ⚡ Fast Priority Dispatch Within 12 Hours
+                </p>
+                <p className="text-charcoal-600 text-[11px] mt-0.5">
+                  Your royal ornaments will be packaged in velvet protective casing and handed over for insured express transit.
+                </p>
+              </div>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">

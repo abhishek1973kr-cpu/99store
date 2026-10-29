@@ -23,11 +23,17 @@ export async function fetchOrdersApi(): Promise<Order[] | null> {
 
 export async function createOrderApi(order: Order): Promise<Order | null> {
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
     const res = await fetch(`${API_BASE}/api/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ order }),
+      signal: controller.signal,
     });
+    clearTimeout(timeoutId);
+
     if (!res.ok) return null;
     const data = await res.json();
     return data.order || null;

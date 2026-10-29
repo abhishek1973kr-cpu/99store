@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useStore } from "@/context/StoreContext";
-import { ShoppingBag, Search, Compass, Sparkles, LayoutDashboard } from "lucide-react";
+import { ShoppingBag, Search, Compass, Sparkles } from "lucide-react";
 
 interface HeaderProps {
   onSearchChange?: (query: string) => void;
@@ -129,21 +129,11 @@ export function Header({ onSearchChange }: HeaderProps) {
             {/* Track Order */}
             <button
               onClick={() => setIsTrackOrderOpen(true)}
-              className="hidden lg:flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-charcoal-700 hover:text-gold-600 px-3 py-1.5 rounded border border-cream-300 hover:border-gold-400 transition-all"
+              className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-charcoal-700 hover:text-gold-600 px-3 py-1.5 rounded border border-cream-300 hover:border-gold-400 transition-all"
             >
               <Compass className="w-3.5 h-3.5 text-gold-600" />
               <span>Track Order</span>
             </button>
-
-            {/* Direct Admin Panel Switch */}
-            <Link
-              href="/admin"
-              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider bg-charcoal-850 hover:bg-charcoal-900 text-cream-100 px-3.5 py-2 rounded border border-charcoal-700 shadow-sm transition-all group"
-            >
-              <LayoutDashboard className="w-3.5 h-3.5 text-gold-400 group-hover:rotate-12 transition-transform" />
-              <span className="hidden sm:inline">Admin Vault</span>
-              <span className="sm:hidden">Admin</span>
-            </Link>
 
             {/* Cart Trigger */}
             <button

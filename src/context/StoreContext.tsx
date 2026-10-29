@@ -389,15 +389,16 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       };
 
       // 1. Optimistic local state update
-      setOrders((prev) => [newOrder, ...prev.filter((o) => o.id !== newOrder.id)]);
-      cacheOrdersLocally([newOrder, ...orders.filter((o) => o.id !== newOrder.id)]);
+      setOrders((prev) => {
+        const updated = [newOrder, ...prev.filter((o) => o.id !== newOrder.id)];
+        cacheOrdersLocally(updated);
+        return updated;
+      });
 
       // 2. Direct write to Firebase Firestore (Real-time Cloud Database)
-      try {
-        await saveOrderToFirestore(newOrder);
-      } catch (fsErr) {
+      saveOrderToFirestore(newOrder).catch((fsErr) => {
         console.warn("Direct Firestore order write notice:", fsErr);
-      }
+      });
 
       // 3. Transmit to Cloud / Central Server Database
       try {
@@ -423,7 +424,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       return newOrder;
     },
-    [cacheOrdersLocally, orders]
+    [cacheOrdersLocally]
   );
 
   const updateOrderStatus = useCallback(
