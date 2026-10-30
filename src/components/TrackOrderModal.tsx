@@ -56,7 +56,7 @@ export function TrackOrderModal() {
               Live Courier Tracking
             </span>
             <h2 className="font-serif text-xl sm:text-2xl font-bold mt-0.5">
-              Track Your Reserve Order
+              Track Your Bolera Order
             </h2>
           </div>
           <button

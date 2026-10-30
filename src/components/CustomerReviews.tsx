@@ -44,7 +44,7 @@ const DEFAULT_ORNAMENT_REVIEWS: Review[] = [
     rating: 4.8,
     title: "Flawless lustre and exquisite pearl drapes",
     comment:
-      "The pearl drop clusters have a natural iridescence that catches ambient light beautifully. Received dozens of compliments. Highly recommend Atelier 99's wholesale vault model.",
+      "The pearl drop clusters have a natural iridescence that catches ambient light beautifully. Received dozens of compliments. Highly recommend Bolera's flat ₹99 store.",
     date: "Feb 12, 2026",
     verified: true,
   },

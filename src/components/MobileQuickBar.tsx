@@ -23,7 +23,7 @@ export function MobileQuickBar() {
           className="flex flex-col items-center gap-1 p-2 text-cream-300 hover:text-gold-400 active:scale-95 transition-all"
         >
           <Crown className="w-4 h-4 text-gold-400" />
-          <span className="text-[10px] font-semibold tracking-wider uppercase">Vault</span>
+          <span className="text-[10px] font-semibold tracking-wider uppercase">Catalog</span>
         </button>
 
         {/* 2. Reviews */}

@@ -111,29 +111,28 @@ export function ProductCard({ product }: ProductCardProps) {
           </p>
         </div>
 
-        {/* Price & Action Row (MRP ₹349 Struck-Through vs Wholesale ₹99) */}
+        {/* Price & Action Row (MRP ₹349 Struck-Through vs Flat ₹99 in Royal Gold) */}
         <div className="pt-3 border-t border-cream-200">
           <div className="flex flex-wrap items-baseline justify-between gap-1 mb-3">
             <div>
               <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2">
-                <span className="text-[10px] sm:text-[11px] uppercase tracking-wider text-charcoal-500 font-medium">Wholesale:</span>
-                <span className="font-serif text-xl sm:text-2xl font-bold text-charcoal-900">
-                  ₹{product.price}
+                <span className="font-serif text-2xl sm:text-3xl font-bold text-gold-500 tracking-tight">
+                  ₹{product.price || 99}
                 </span>
-                <span className="text-xs text-charcoal-400 line-through font-serif">
-                  MRP ₹{product.mrp}
+                <span className="text-xs sm:text-sm text-charcoal-400 line-through font-serif font-light">
+                  MRP ₹{product.mrp || 349}
                 </span>
               </div>
-              <span className="text-[10px] text-emerald-800 font-semibold block">
-                Save ₹{product.mrp - product.price} (Direct Artisan Deal)
+              <span className="text-[10px] text-emerald-800 font-semibold block mt-0.5">
+                Save ₹{(product.mrp || 349) - (product.price || 99)} • Har Ek Maal ₹99
               </span>
             </div>
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gold-700 font-semibold bg-gold-400/15 px-2 py-0.5 sm:py-1 rounded border border-gold-400/30">
-              Wholesale Rate
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gold-700 font-bold bg-gold-400/20 px-2 py-0.5 sm:py-1 rounded border border-gold-400/40">
+              Wholesale Deal
             </span>
           </div>
 
-          {/* Action Buttons: Clean "View" + "Add" (Spacious Mobile Touch Targets) */}
+          {/* Action Buttons: Sophisticated "View" + Quick "Add" (Spacious Native Mobile Touch Targets) */}
           <div className="grid grid-cols-2 gap-2.5 pt-1">
             <button
               onClick={handleOpenDetails}

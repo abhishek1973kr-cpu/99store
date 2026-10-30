@@ -28,7 +28,7 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-gold-400" />
               <span className="text-[10px] uppercase tracking-widest text-gold-400 font-semibold">
-                Atelier 99 Trust & Legal Assurance
+                Bolera Trust & Legal Assurance
               </span>
             </div>
             <h2 className="font-serif text-xl sm:text-2xl font-bold mt-1">
@@ -107,7 +107,7 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
                 </h3>
               </div>
               <p>
-                At <strong>Atelier 99</strong>, each ornament article is prepared inside an individual velvet-cushioned protective gift case, hermetically wrapped in water-resistant shielding, and sealed in our signature tamper-evident wax seal royal envelope.
+                At <strong>Bolera</strong>, each ornament and lifestyle article is prepared inside an individual velvet-cushioned protective gift case, hermetically wrapped in water-resistant shielding, and dispatched within 12 hours.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
                 <div className="p-3 bg-white rounded border border-cream-300 space-y-1">
@@ -182,7 +182,7 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
                   <div>
                     <strong className="text-charcoal-900 block text-xs">Simple Notification:</strong>
                     <span className="text-xs text-charcoal-600">
-                      Simply message our concierge desk at <code>concierge@atelier99.store</code> or WhatsApp <code>+91 98290 14810</code> with your Order ID.
+                      Simply message our concierge desk at <code>support@bolera.store99.com</code> or WhatsApp <code>+91 98290 14810</code> with your Order ID.
                     </span>
                   </div>
                 </div>
@@ -200,7 +200,7 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
                 </h3>
               </div>
               <p>
-                Your privacy is regarded as sacred. Atelier 99 complies strictly with the Digital Personal Data Protection Act (DPDPA) and international consumer safety protocols.
+                Your privacy is regarded as sacred. Bolera complies strictly with the Digital Personal Data Protection Act (DPDPA) and international consumer safety protocols.
               </p>
               <ul className="list-disc pl-5 space-y-2 text-xs text-charcoal-700">
                 <li>
@@ -213,7 +213,7 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
                   <strong>Discreet Billing & Packaging:</strong> Outer dispatch packages feature discreet labeling without bold jewelry declarations to protect your purchase during transit.
                 </li>
                 <li>
-                  <strong>Right to Deletion:</strong> You may request complete erasure of your shipping address records by emailing our data officer at <code>privacy@atelier99.store</code>.
+                  <strong>Right to Deletion:</strong> You may request complete erasure of your shipping address records by emailing our data officer at <code>privacy@bolera.store99.com</code>.
                 </li>
               </ul>
             </div>
@@ -229,7 +229,7 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
                 </h3>
               </div>
               <p>
-                By reserving and ordering from Atelier 99, you agree to the following transparent commercial agreements:
+                By placing an order on Bolera (Har Ek Maal ₹99), you agree to the following transparent commercial agreements:
               </p>
               <div className="space-y-3 pt-2 text-xs">
                 <div className="p-3 bg-white rounded border border-cream-300 space-y-1">

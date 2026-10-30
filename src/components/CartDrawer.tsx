@@ -46,10 +46,10 @@ export function CartDrawer() {
             <div className="flex items-center gap-2.5">
               <ShoppingBag className="w-5 h-5 text-gold-600" />
               <h2 className="font-serif text-xl font-bold text-charcoal-900">
-                Your Ornaments Bag
+                Your Bolera Bag
               </h2>
               <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-gold-400/20 text-charcoal-800">
-                {cartCount} {cartCount === 1 ? "piece" : "pieces"}
+                {cartCount} {cartCount === 1 ? "item" : "items"}
               </span>
             </div>
             <button
@@ -65,10 +65,10 @@ export function CartDrawer() {
           <div className="bg-charcoal-850 px-6 py-2.5 text-cream-100 flex items-center justify-between text-xs tracking-wider">
             <span className="flex items-center gap-1.5 text-gold-300">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>Wholesale Deal • Flat ₹99 / piece</span>
+              <span>Bolera • Har Ek Maal Flat ₹99</span>
             </span>
             <span className="text-emerald-400 font-semibold text-[11px]">
-              Save ₹250 per piece
+              Save ₹250 per item
             </span>
           </div>
 

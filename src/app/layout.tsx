@@ -16,9 +16,9 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "ATELIER 99 | Royal Ladies & Gents Ornaments Vault (MRP ₹349 • Wholesale ₹99)",
+  title: "Bolera | Har Ek Maal ₹99 Flat Store • Ultra-Luxury Boutique",
   description:
-    "An exclusive jewelry vault featuring 25 curated Ladies & Gents Royal Ornaments with minimum 5 high-resolution perspectives per article. Original MRP ₹349 offered at a special wholesale price of ₹99.",
+    "Welcome to Bolera. An exclusive flat-rate lifestyle & jewelry store where every single item is universally priced at flat ₹99 (Benchmark Retail MRP ₹349). Fastly shipped within 12 hours with Cash on Delivery across India.",
 };
 
 export default function RootLayout({

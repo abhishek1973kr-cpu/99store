@@ -231,23 +231,23 @@ export function ProductDetailModal() {
                 <div className="bg-cream-200/90 p-4 rounded border border-cream-300 flex items-center justify-between">
                   <div>
                     <span className="text-[11px] uppercase tracking-wider text-charcoal-500 block">
-                      Wholesale Clearance Deal
+                      Universal Price (Har Ek Maal ₹99)
                     </span>
                     <div className="flex items-baseline gap-2.5">
-                      <span className="font-serif text-3xl font-bold text-charcoal-900">
-                        ₹{product.price}
+                      <span className="font-serif text-3xl sm:text-4xl font-bold text-gold-500">
+                        ₹{product.price || 99}
                       </span>
-                      <span className="text-base text-charcoal-400 line-through font-serif">
-                        MRP ₹{product.mrp}
+                      <span className="text-base text-charcoal-400 line-through font-serif font-light">
+                        MRP ₹{product.mrp || 349}
                       </span>
                       <span className="text-xs text-emerald-800 font-bold uppercase tracking-wider bg-emerald-100 px-1.5 py-0.5 rounded">
-                        Save ₹{product.mrp - product.price}
+                        Save ₹{(product.mrp || 349) - (product.price || 99)}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-[11px] font-semibold text-emerald-800 uppercase tracking-wider block">
-                      Direct Artisan Rate
+                    <span className="text-[11px] font-semibold text-gold-700 uppercase tracking-wider block">
+                      Wholesale Deal
                     </span>
                     <span className="text-[10px] text-charcoal-500">COD Available</span>
                   </div>

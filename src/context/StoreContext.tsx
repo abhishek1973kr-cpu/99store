@@ -419,9 +419,6 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
 
       // 5. Update UI modal states
       setLastPlacedOrder(newOrder);
-      setIsCheckoutOpen(false);
-      setIsOrderSuccessOpen(true);
-
       return newOrder;
     },
     [cacheOrdersLocally]

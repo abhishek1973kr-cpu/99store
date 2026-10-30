@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef } from "react";
+import { motion } from "framer-motion";
 import { useStore } from "@/context/StoreContext";
 import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
@@ -13,13 +14,13 @@ import { TrackOrderModal } from "@/components/TrackOrderModal";
 import { HomeReviewsShowcase } from "@/components/HomeReviewsShowcase";
 import { MobileQuickBar } from "@/components/MobileQuickBar";
 import { Footer } from "@/components/Footer";
-import { Sparkles, SlidersHorizontal, ShieldCheck, Crown, Layers } from "lucide-react";
+import { Sparkles, SlidersHorizontal, ShieldCheck, Crown, Layers, Tag, Clock, Truck } from "lucide-react";
 
-const CATEGORIES = ["All Ornaments", "Ladies Ornaments", "Gents Ornaments"] as const;
+const CATEGORIES = ["All Items", "Ladies Ornaments", "Gents Ornaments"] as const;
 
 export default function StorefrontPage() {
   const { products } = useStore();
-  const [selectedCategory, setSelectedCategory] = useState<string>("All Ornaments");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All Items");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<"featured" | "rating" | "newest" | "alpha">("featured");
 
@@ -34,7 +35,7 @@ export default function StorefrontPage() {
     return products
       .filter((product) => {
         const matchesCategory =
-          selectedCategory === "All Ornaments" || product.category === selectedCategory;
+          selectedCategory === "All Items" || product.category === selectedCategory;
         const matchesSearch =
           !searchQuery.trim() ||
           product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -67,20 +68,26 @@ export default function StorefrontPage() {
         {/* Hero Section */}
         <Hero onExploreClick={scrollToCatalog} />
 
-        {/* Catalog Section - Airy, Spacious, Luxurious */}
+        {/* Catalog Section - Airy, Spacious, Native Boutique Feel */}
         <section ref={catalogRef} id="catalog" className="py-12 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-cream-300">
+          {/* Section Header with Scroll Animation */}
+          <motion.div
+            initial={{ opacity: 0, y: 25 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-50px" }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-cream-300"
+          >
             <div>
-              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-gold-600 mb-2">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-gold-600 mb-2">
                 <Crown className="w-3.5 h-3.5" />
-                <span>The Royal Ornaments Archive</span>
+                <span>Bolera Curated Collection • Har Ek Maal ₹99</span>
               </div>
-              <h2 className="font-serif text-2xl sm:text-4xl lg:text-5xl font-bold text-charcoal-900 tracking-tight break-words">
-                Ladies & Gents Ornaments • Wholesale ₹99
+              <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-charcoal-900 tracking-tight break-words">
+                Every Single Item at Flat ₹99
               </h2>
               <p className="text-xs sm:text-sm text-charcoal-600 mt-2 font-light">
-                Displaying {filteredProducts.length} {filteredProducts.length === 1 ? "creation" : "creations"} in vault • Benchmark Retail MRP ₹349 • 5+ High-Res Views Per Item
+                Displaying {filteredProducts.length} {filteredProducts.length === 1 ? "creation" : "creations"} • Benchmark Retail MRP ₹349 • 5+ High-Res Views Per Item
               </p>
             </div>
 
@@ -101,12 +108,13 @@ export default function StorefrontPage() {
                 <option value="alpha">Alphabetical (A-Z)</option>
               </select>
             </div>
-          </div>
+          </motion.div>
 
           {/* Category Filter Pills (Ladies vs Gents vs All) */}
           <div className="py-6 sm:py-8 flex items-center gap-2.5 sm:gap-3 overflow-x-auto no-scrollbar">
             {CATEGORIES.map((cat) => {
-              const count = cat === "All Ornaments" ? products.length : cat === "Ladies Ornaments" ? ladiesCount : gentsCount;
+              const label = cat === "All Items" ? "All Items (₹99)" : cat;
+              const count = cat === "All Items" ? products.length : cat === "Ladies Ornaments" ? ladiesCount : gentsCount;
               return (
                 <button
                   key={cat}
@@ -117,7 +125,7 @@ export default function StorefrontPage() {
                       : "bg-white text-charcoal-700 hover:bg-cream-200 hover:text-charcoal-900 border border-cream-300 shadow-xs"
                   }`}
                 >
-                  <span>{cat}</span>
+                  <span>{label}</span>
                   <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${
                     selectedCategory === cat ? "bg-gold-500 text-charcoal-900" : "bg-cream-200 text-charcoal-700"
                   }`}>
@@ -141,14 +149,14 @@ export default function StorefrontPage() {
                 <SlidersHorizontal className="w-6 h-6" />
               </div>
               <h3 className="font-serif text-xl font-bold text-charcoal-850">
-                No ornaments match your criteria
+                No articles match your criteria
               </h3>
               <p className="text-xs text-charcoal-600 max-w-sm mx-auto">
                 We couldn&apos;t find items matching &ldquo;{searchQuery}&rdquo;. Try clearing search filters or choosing another category.
               </p>
               <button
                 onClick={() => {
-                  setSelectedCategory("All Ornaments");
+                  setSelectedCategory("All Items");
                   setSearchQuery("");
                 }}
                 className="px-5 py-2.5 bg-charcoal-900 text-cream-100 text-xs uppercase tracking-wider font-semibold rounded"
@@ -159,46 +167,52 @@ export default function StorefrontPage() {
           )}
         </section>
 
-        {/* Philosophy & Provenance Banner */}
+        {/* Bolera Value Proposition & Wholesale Pillars */}
         <section id="philosophy" className="py-16 sm:py-20 bg-cream-200/60 border-t border-b border-cream-300">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10">
-              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300">
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, margin: "-40px" }}
+              transition={{ duration: 0.6 }}
+              className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10"
+            >
+              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300 hover:border-gold-400 transition-colors shadow-xs">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
-                  <Crown className="w-5 h-5" />
+                  <Tag className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl font-bold text-charcoal-900">
-                  Wholesale Direct Pricing
+                  Har Ek Maal ₹99
                 </h3>
                 <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed font-light">
-                  Traditional jewelry showrooms mark up jewelry prices up to 500% to offset retail rents. We sell our entire collection directly at an unbeatable flat wholesale rate of <strong>₹99</strong> (benchmark MRP ₹349).
+                  No confusing tiers or hidden surcharges. Our entire store is universally priced at flat <strong>₹99</strong> (benchmark MRP ₹349), directly cutting out middlemen showroom markups.
                 </p>
               </div>
 
-              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300">
+              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300 hover:border-gold-400 transition-colors shadow-xs">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
-                  <Layers className="w-5 h-5" />
+                  <Clock className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl font-bold text-charcoal-900">
-                  5+ Perspectives Per Piece
+                  Fast 12-Hour Dispatch
                 </h3>
                 <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed font-light">
-                  Every single ornament in our vault is photographed across minimum 5 high-resolution perspectives: macro stone setting, side clasp closure, styling scale, and royal packaging view.
+                  Orders placed before 4 PM are packed in velvet-lined protective cases and dispatched to insured pan-India couriers within 12 hours with full real-time tracking.
                 </p>
               </div>
 
-              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300">
+              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300 hover:border-gold-400 transition-colors shadow-xs">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
-                  <Sparkles className="w-5 h-5" />
+                  <ShieldCheck className="w-5 h-5" />
                 </div>
                 <h3 className="font-serif text-xl font-bold text-charcoal-900">
-                  Live Vault Availability
+                  Cash on Delivery & Trust
                 </h3>
                 <p className="text-xs sm:text-sm text-charcoal-600 leading-relaxed font-light">
-                  Direct artisan-to-connoisseur catalog architecture, ensuring real-time piece availability, instant stock allocation, and genuine handcrafted quality with zero middleman markups.
+                  Pay with confidence at your doorstep with 100% Cash on Delivery (COD). Every article is backed by a 7-day hassle-free replacement guarantee.
                 </p>
               </div>
-            </div>
+            </motion.div>
           </div>
         </section>
 

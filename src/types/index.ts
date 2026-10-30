@@ -1,7 +1,10 @@
 export const DEFAULT_MRP = 349;
 export const DEFAULT_WHOLESALE_PRICE = 99;
+export const STORE_NAME = "Bolera";
+export const STORE_TAGLINE = "Har Ek Maal ₹99";
 
-export type OrnamentCategory = "Ladies Ornaments" | "Gents Ornaments";
+export type ProductCategory = "All Items" | "Ladies Collection" | "Gents Collection" | "Trendy Lifestyle" | string;
+export type OrnamentCategory = "Ladies Ornaments" | "Gents Ornaments" | ProductCategory;
 
 export interface Review {
   id: string;

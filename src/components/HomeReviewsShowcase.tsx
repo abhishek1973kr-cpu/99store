@@ -107,7 +107,7 @@ const FEATURED_REVIEWS: CuratedReview[] = [
     rating: 5,
     title: "Cushion cut zirconia sparkles with fiery diamond brilliance",
     comment:
-      "The micro-pavé halo setting holds light so brilliantly that multiple jewelers mistook it for genuine solitaire platinum. The presentation velvet box arrived sealed with wax. Atelier 99 is my new favorite vault.",
+      "The micro-pavé halo setting holds light so brilliantly that multiple jewelers mistook it for genuine solitaire platinum. The presentation velvet box arrived sealed with wax. Bolera is my new favorite destination for luxury ornaments at ₹99.",
     date: "Feb 10, 2026",
     likesCount: 77,
     verified: true,
@@ -221,7 +221,7 @@ export function HomeReviewsShowcase() {
               Customer Feedback & Experiences
             </h2>
             <p className="text-xs sm:text-sm text-charcoal-600 mt-2 max-w-xl leading-relaxed">
-              Real reflections from connoisseurs who have adorned our Ladies & Gents Royal Ornaments across India. Every single piece is backed by our flat ₹99 wholesale pledge.
+              Real reflections from connoisseurs and shoppers who have ordered from Bolera across India. Every single piece is backed by our universal flat ₹99 wholesale pledge.
             </p>
           </div>
 

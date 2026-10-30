@@ -34,31 +34,31 @@ export function Footer() {
           <div className="space-y-4">
             <div className="flex flex-col">
               <span className="font-serif text-2xl sm:text-3xl tracking-widest text-cream-100 font-bold">
-                ATELIER 99
+                BOLERA
               </span>
-              <span className="text-[10px] uppercase tracking-[0.3em] text-gold-400 font-medium -mt-0.5">
-                Royal Ornaments Vault
+              <span className="text-[10px] uppercase tracking-[0.3em] text-gold-400 font-bold -mt-0.5">
+                Har Ek Maal ₹99
               </span>
             </div>
             <p className="text-xs text-cream-400 leading-relaxed font-light">
-              Democratizing royal Indian adornment by bypassing traditional 500% showroom retail markups. Our 25-piece vault of Ladies & Gents ornaments is permanently offered at a flat wholesale rate of <strong>₹99</strong> (benchmark retail MRP ₹349).
+              Democratizing ultra-luxury lifestyle and jewelry adornment. Every single creation in our store is universally priced at flat <strong>₹99</strong> (benchmark retail MRP ₹349) with insured 12-hour express dispatch and Cash on Delivery.
             </p>
             <div className="pt-2 flex items-center gap-2 text-xs text-gold-400">
               <Sparkles className="w-4 h-4 text-gold-400 shrink-0" />
-              <span>Real-Time Cloud Synchronized Jewelry Engine</span>
+              <span>Bolera Universal ₹99 Wholesale Architecture</span>
             </div>
           </div>
 
           {/* Column 2: Flagship Business & Store Address */}
           <div className="space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-widest text-cream-100 pb-1 border-b border-charcoal-800">
-              Physical Vault Address
+              Bolera Store Flagship
             </h4>
             <div className="space-y-2.5 text-xs text-cream-400 font-light">
               <div className="flex items-start gap-2">
                 <MapPin className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
                 <div className="leading-relaxed">
-                  <strong className="text-cream-100 block font-medium">Atelier 99 Headquarters</strong>
+                  <strong className="text-cream-100 block font-medium">Bolera Flagship Studio</strong>
                   <p>Heritage Palace Arcade, Suite 402</p>
                   <p>Mirza Ismail (M.I.) Road, Civil Lines</p>
                   <p>Jaipur, Rajasthan 302001, India</p>
@@ -75,7 +75,7 @@ export function Footer() {
           {/* Column 3: Concierge & Direct Contact */}
           <div className="space-y-3">
             <h4 className="text-xs font-semibold uppercase tracking-widest text-cream-100 pb-1 border-b border-charcoal-800">
-              Patron Concierge Desk
+              Customer Concierge Desk
             </h4>
             <div className="space-y-2.5 text-xs text-cream-400 font-light">
               <div className="flex items-start gap-2">
@@ -87,7 +87,7 @@ export function Footer() {
                   >
                     +91 98290 14810
                   </a>
-                  <span className="text-[11px] text-cream-400">WhatsApp & Direct Assistance</span>
+                  <span className="text-[11px] text-cream-400">WhatsApp & Direct Call Assistance</span>
                 </div>
               </div>
 
@@ -95,19 +95,19 @@ export function Footer() {
                 <Mail className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
                 <div>
                   <a
-                    href="mailto:concierge@atelier99.store"
+                    href="mailto:support@bolera.store99.com"
                     className="hover:text-gold-400 transition-colors font-medium text-cream-100 block"
                   >
-                    concierge@atelier99.store
+                    support@bolera.store99.com
                   </a>
-                  <span className="text-[11px] text-cream-400">Dispatch & Order Inquiries</span>
+                  <span className="text-[11px] text-cream-400">Order & Dispatch Inquiries</span>
                 </div>
               </div>
 
               <div className="pt-2">
                 <span className="inline-flex items-center gap-1.5 text-[11px] font-medium tracking-wider text-gold-400 py-1.5 px-3 rounded bg-charcoal-800 border border-charcoal-700">
                   <ShieldCheck className="w-3.5 h-3.5 text-gold-400" />
-                  <span>100% Insured Pan-India Transit</span>
+                  <span>100% Insured Pan-India Courier Transit</span>
                 </span>
               </div>
             </div>
@@ -166,7 +166,7 @@ export function Footer() {
 
         {/* Bottom Credits & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-cream-400 gap-4">
-          <p>© {new Date().getFullYear()} Atelier 99 / The 99 Ornaments Vault. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Bolera • Har Ek Maal ₹99 Flat Store. All rights reserved.</p>
           <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
             <button onClick={() => openPolicy("shipping")} className="hover:text-white">Shipping</button>
             <span>•</span>

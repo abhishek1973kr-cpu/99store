@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import confetti from "canvas-confetti";
 import { useStore } from "@/context/StoreContext";
 import {
   X,
@@ -15,8 +16,11 @@ import {
   MapPin,
   Clock,
   Phone,
+  CheckCircle2,
+  Printer,
+  Sparkles,
 } from "lucide-react";
-import { PaymentMethod, ShippingAddress, DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE } from "@/types";
+import { PaymentMethod, ShippingAddress, Order, DEFAULT_MRP, DEFAULT_WHOLESALE_PRICE } from "@/types";
 
 export function CheckoutModal() {
   const { isCheckoutOpen, setIsCheckoutOpen, checkoutItems, placeOrder } = useStore();
@@ -34,8 +38,23 @@ export function CheckoutModal() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
 
-  if (!isCheckoutOpen || checkoutItems.length === 0) return null;
+  // Trigger celebration confetti upon order confirmation
+  useEffect(() => {
+    if (completedOrder) {
+      try {
+        confetti({
+          particleCount: 90,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ["#C5A880", "#1A1A1A", "#E8E4DA", "#B8966C"],
+        });
+      } catch {}
+    }
+  }, [completedOrder]);
+
+  if (!isCheckoutOpen || (checkoutItems.length === 0 && !completedOrder)) return null;
 
   const totalQuantity = checkoutItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalAmount = checkoutItems.reduce(
@@ -50,6 +69,7 @@ export function CheckoutModal() {
 
   const handleClose = () => {
     setIsCheckoutOpen(false);
+    setCompletedOrder(null);
   };
 
   const handleProductClick = (productId: string) => {
@@ -87,7 +107,7 @@ export function CheckoutModal() {
     const shippingInfo: ShippingAddress = {
       fullName: fullName.trim(),
       phone: phone.trim(),
-      email: email.trim() || `${fullName.toLowerCase().replace(/\s+/g, "")}@ornaments.store99.com`,
+      email: email.trim() || `${fullName.toLowerCase().replace(/\s+/g, "")}@bolera.store99.com`,
       addressLine1: addressLine1.trim(),
       addressLine2: addressLine2.trim() || undefined,
       landmark: landmark.trim() || undefined,
@@ -97,8 +117,8 @@ export function CheckoutModal() {
     };
 
     try {
-      await placeOrder(shippingInfo, checkoutItems, paymentMethod);
-      // Reset form on success
+      const order = await placeOrder(shippingInfo, checkoutItems, paymentMethod);
+      // Reset input fields
       setFullName("");
       setPhone("");
       setEmail("");
@@ -108,7 +128,8 @@ export function CheckoutModal() {
       setCity("");
       setState("");
       setPincode("");
-      setIsCheckoutOpen(false);
+      // Render luxury confirmation view inside popup immediately
+      setCompletedOrder(order);
     } catch (err) {
       console.error("Order submission error:", err);
       setFormError("Failed to register order. Please try again.");
@@ -122,34 +143,178 @@ export function CheckoutModal() {
       className="fixed inset-0 z-50 overflow-y-auto bg-charcoal-900/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn"
       onClick={handleClose}
     >
-      {/* Centered Half-Screen Modal / Popup Box (roughly 60-70% height & width) */}
+      {/* Centered Half-Screen Modal Popup (~60-70% height & width with blurred dark backdrop overlay) */}
       <div
         className="relative bg-cream-100 w-full max-w-xl md:max-w-2xl max-h-[85vh] md:max-h-[75vh] flex flex-col rounded-lg border border-gold-400/40 shadow-2xl overflow-hidden my-auto"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* HALF-SCREEN CHECKOUT POPUP FORM */}
-        <div className="flex flex-col h-full overflow-hidden">
-          {/* Header */}
-          <div className="p-4 sm:p-5 bg-charcoal-900 text-cream-100 flex items-center justify-between border-b border-charcoal-800 shrink-0">
-            <div>
-              <div className="flex items-center gap-1.5">
-                <Lock className="w-3.5 h-3.5 text-gold-400" />
-                <span className="text-[10px] uppercase tracking-widest text-gold-400 font-semibold">
-                  Royal Vault Quick Checkout
+        {/* VIEW 1: ORDER SUCCESSFULLY CONFIRMED INSIDE POPUP */}
+        {completedOrder ? (
+          <div className="flex flex-col h-full overflow-y-auto">
+            {/* Top Success Banner */}
+            <div className="bg-charcoal-900 text-cream-100 p-6 text-center relative shrink-0 border-b border-charcoal-800">
+              <button
+                onClick={handleClose}
+                className="absolute top-4 right-4 p-1.5 rounded-full bg-charcoal-800 text-cream-300 hover:text-white transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+              <div className="w-12 h-12 rounded-full bg-gold-400/20 text-gold-400 mx-auto flex items-center justify-center mb-3 border border-gold-400/40">
+                <CheckCircle2 className="w-6 h-6" />
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.25em] text-gold-400 font-semibold block mb-0.5">
+                ⚡ Bolera Express Dispatch Registered
+              </span>
+              <h3 className="font-serif text-xl sm:text-2xl font-bold">
+                Order Successfully Confirmed!
+              </h3>
+              <p className="text-xs text-cream-300 mt-1 font-light">
+                Thank you, <strong className="text-white">{completedOrder.customer.fullName}</strong>. Order ID:{" "}
+                <span className="text-gold-300 font-mono font-bold">{completedOrder.id}</span>
+              </p>
+              <p className="text-[11px] text-gold-400/90 font-mono mt-0.5">
+                Tracking ID: {completedOrder.trackingNumber}
+              </p>
+            </div>
+
+            {/* Scrollable Order Details Snapshot */}
+            <div className="p-5 sm:p-6 space-y-4 overflow-y-auto flex-1 text-xs">
+              {/* Payment & Status Badges */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-cream-200/70 p-3 rounded border border-cream-300">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-charcoal-500 block">Payment Method</span>
+                  <span className="font-bold text-amber-900 bg-amber-100 px-2 py-0.5 rounded inline-flex items-center gap-1 mt-0.5 text-[11px] border border-amber-300">
+                    <Banknote className="w-3 h-3 text-amber-700" />
+                    <span>{completedOrder.paymentMethod === "COD" ? "Cash on Delivery" : "Online Prepaid"}</span>
+                  </span>
+                </div>
+
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-charcoal-500 block">Payable Amount</span>
+                  <span className="font-serif font-bold text-charcoal-900 text-sm block mt-0.5">
+                    ₹{completedOrder.totalAmount}
+                  </span>
+                </div>
+
+                <div className="col-span-2 sm:col-span-1">
+                  <span className="text-[10px] uppercase tracking-wider text-charcoal-500 block">Dispatch Window</span>
+                  <span className="font-medium text-emerald-800 flex items-center gap-1 mt-0.5 text-[11px]">
+                    <Clock className="w-3 h-3 text-emerald-700" />
+                    <span>Ships within 12 Hours</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* Delivery Destination Address */}
+              <div className="p-3 bg-white rounded border border-cream-300 space-y-1">
+                <div className="flex items-center gap-1 text-[11px] font-semibold text-charcoal-900 uppercase tracking-wider">
+                  <MapPin className="w-3.5 h-3.5 text-gold-600" />
+                  <span>Delivery Destination</span>
+                </div>
+                <p className="font-medium text-charcoal-900">{completedOrder.customer.addressLine1}</p>
+                {completedOrder.customer.addressLine2 && (
+                  <p className="text-charcoal-600">{completedOrder.customer.addressLine2}</p>
+                )}
+                {completedOrder.customer.landmark && (
+                  <p className="text-charcoal-500 text-[11px]">Near {completedOrder.customer.landmark}</p>
+                )}
+                <p className="font-bold text-charcoal-900">
+                  {completedOrder.customer.city}, {completedOrder.customer.state} - {completedOrder.customer.pincode}
+                </p>
+                <p className="text-charcoal-600 font-mono text-[11px] pt-0.5">
+                  Contact: {completedOrder.customer.phone}
+                </p>
+              </div>
+
+              {/* Ordered Items Preview with Clickable Thumbnails */}
+              <div className="space-y-2">
+                <span className="text-[10px] uppercase font-bold text-charcoal-500 tracking-wider block">
+                  Reserved Items ({completedOrder.items.length}) • Click thumbnail to inspect
+                </span>
+                <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                  {completedOrder.items.map((it, idx) => (
+                    <div
+                      key={idx}
+                      onClick={() => handleProductClick(it.productId)}
+                      className="flex items-center justify-between p-2 bg-white rounded border border-cream-200 hover:border-gold-400 transition-colors cursor-pointer group"
+                      title="Click to view product details"
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <img
+                          src={it.image}
+                          alt={it.name}
+                          className="w-10 h-10 object-cover rounded border border-cream-300 shrink-0 group-hover:scale-105 transition-transform"
+                        />
+                        <div className="truncate">
+                          <span className="font-serif font-bold text-charcoal-900 block truncate group-hover:text-gold-700">
+                            {it.name}
+                          </span>
+                          <span className="text-[10px] text-charcoal-500">
+                            Qty: {it.quantity} × <strong className="text-gold-700">₹{it.price}</strong> (MRP ₹{it.mrp})
+                          </span>
+                        </div>
+                      </div>
+                      <span className="font-serif font-bold text-charcoal-900 text-xs shrink-0 ml-2">
+                        ₹{it.quantity * it.price}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fast Priority Dispatch Notice */}
+              <div className="p-2.5 bg-gold-400/10 border border-gold-400/30 rounded flex items-center gap-2 text-[11px] text-charcoal-800">
+                <Sparkles className="w-4 h-4 text-gold-600 shrink-0" />
+                <span>
+                  <strong>Har Ek Maal ₹99:</strong> Your selection is being carefully packed in velvet protective casing for insured express courier transit.
                 </span>
               </div>
-              <h2 className="font-serif text-lg sm:text-xl font-bold mt-0.5">
-                Complete Your Ornament Order
-              </h2>
             </div>
-            <button
-              onClick={handleClose}
-              className="p-1.5 rounded-full bg-charcoal-800 text-cream-300 hover:text-white transition-colors"
-              aria-label="Close checkout"
-            >
-              <X className="w-4 h-4" />
-            </button>
+
+            {/* Bottom Actions */}
+            <div className="p-4 bg-cream-200/80 border-t border-cream-300 flex items-center justify-between gap-3 shrink-0">
+              <button
+                onClick={() => window.print()}
+                className="py-2.5 px-4 bg-white hover:bg-cream-100 text-charcoal-800 text-xs uppercase tracking-wider font-semibold rounded border border-cream-300 flex items-center gap-1.5 shadow-xs"
+              >
+                <Printer className="w-3.5 h-3.5 text-gold-600" />
+                <span>Print Slip</span>
+              </button>
+
+              <button
+                onClick={handleClose}
+                className="flex-1 py-2.5 px-4 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs uppercase tracking-widest font-semibold rounded flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <span>Continue Shopping</span>
+                <ArrowRight className="w-3.5 h-3.5 text-gold-400" />
+              </button>
+            </div>
           </div>
+        ) : (
+          /* VIEW 2: HALF-SCREEN CHECKOUT POPUP FORM */
+          <div className="flex flex-col h-full overflow-hidden">
+            {/* Header */}
+            <div className="p-4 sm:p-5 bg-charcoal-900 text-cream-100 flex items-center justify-between border-b border-charcoal-800 shrink-0">
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <Lock className="w-3.5 h-3.5 text-gold-400" />
+                  <span className="text-[10px] uppercase tracking-widest text-gold-400 font-semibold">
+                    Bolera Quick Checkout • Har Ek Maal ₹99
+                  </span>
+                </div>
+                <h2 className="font-serif text-lg sm:text-xl font-bold mt-0.5">
+                  Complete Your Order
+                </h2>
+              </div>
+              <button
+                onClick={handleClose}
+                className="p-1.5 rounded-full bg-charcoal-800 text-cream-300 hover:text-white transition-colors"
+                aria-label="Close checkout"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
 
             {/* Scrollable Form Body */}
             <form onSubmit={handleSubmitOrder} className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
@@ -163,7 +328,7 @@ export function CheckoutModal() {
               <div className="bg-cream-200/80 p-3 sm:p-3.5 rounded border border-cream-300 space-y-2">
                 <div className="flex items-center justify-between pb-1.5 border-b border-cream-300/80">
                   <span className="text-[11px] font-semibold uppercase tracking-wider text-charcoal-800">
-                    Selected Items ({totalQuantity}) • Click to inspect
+                    Selected Items ({totalQuantity}) • Click to view item
                   </span>
                   <span className="text-[11px] text-emerald-800 font-bold uppercase flex items-center gap-1">
                     <Tag className="w-3 h-3" />
@@ -208,7 +373,7 @@ export function CheckoutModal() {
                 </div>
 
                 <div className="pt-1.5 border-t border-cream-300/80 flex items-center justify-between text-xs font-semibold text-charcoal-900">
-                  <span>Wholesale Total Payable</span>
+                  <span>Total Payable (Flat ₹99 Store)</span>
                   <span className="font-serif text-sm font-bold text-gold-700">₹{totalAmount}</span>
                 </div>
               </div>
@@ -216,18 +381,18 @@ export function CheckoutModal() {
               {/* Section 2: Delivery Details */}
               <div className="space-y-3">
                 <h4 className="font-serif text-sm font-bold text-charcoal-900 border-b border-cream-300 pb-1">
-                  1. Delivery Details
+                  1. Delivery Destination
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                   <div>
                     <label className="block font-semibold uppercase tracking-wider text-charcoal-800 mb-1">
-                      Recipient Name *
+                      Recipient Full Name *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Maharani Gayatri Singh"
+                      placeholder="e.g. Rahul Sharma / Ananya Verma"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
@@ -250,12 +415,12 @@ export function CheckoutModal() {
 
                   <div className="sm:col-span-2">
                     <label className="block font-semibold uppercase tracking-wider text-charcoal-800 mb-1">
-                      Street Address *
+                      Full Street Address *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="House / Flat no., Apartment / Villa, Street / Road"
+                      placeholder="House / Flat no., Building name, Street / Locality"
                       value={addressLine1}
                       onChange={(e) => setAddressLine1(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
@@ -268,7 +433,7 @@ export function CheckoutModal() {
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Near Raj Mandir Club, Civil Lines"
+                      placeholder="e.g. Near Metro Station / Main Market"
                       value={landmark}
                       onChange={(e) => setLandmark(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
@@ -282,7 +447,7 @@ export function CheckoutModal() {
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Jaipur"
+                      placeholder="e.g. Jaipur / Delhi / Mumbai"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       className="w-full px-3 py-2 bg-white border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
@@ -291,7 +456,7 @@ export function CheckoutModal() {
 
                   <div>
                     <label className="block font-semibold uppercase tracking-wider text-charcoal-800 mb-1">
-                      State & PIN Code *
+                      State & 6-Digit PIN Code *
                     </label>
                     <div className="grid grid-cols-2 gap-2">
                       <input
@@ -306,7 +471,7 @@ export function CheckoutModal() {
                         type="text"
                         required
                         maxLength={6}
-                        placeholder="6-digit PIN"
+                        placeholder="PIN code"
                         value={pincode}
                         onChange={(e) => setPincode(e.target.value)}
                         className="w-full px-3 py-2 bg-white border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
@@ -316,14 +481,14 @@ export function CheckoutModal() {
                 </div>
               </div>
 
-              {/* Section 3: Payment Method - Cash on Delivery Featured */}
+              {/* Section 3: Payment Method - Cash on Delivery (COD) Featured */}
               <div className="space-y-2">
                 <h4 className="font-serif text-sm font-bold text-charcoal-900 border-b border-cream-300 pb-1">
                   2. Payment Method
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                  {/* Option 1: Cash on Delivery */}
+                  {/* Option 1: Cash on Delivery (COD) */}
                   <div
                     onClick={() => setPaymentMethod("COD")}
                     className={`p-3 rounded border-2 cursor-pointer transition-all ${
@@ -350,11 +515,11 @@ export function CheckoutModal() {
                       </div>
                     </div>
                     <p className="text-[11px] text-charcoal-600 mt-1">
-                      Pay cash or UPI scan at delivery. <strong>₹0 Extra Fee</strong>.
+                      Pay cash or UPI scan at your door upon delivery.
                     </p>
                   </div>
 
-                  {/* Option 2: Instant Online */}
+                  {/* Option 2: Online Prepaid */}
                   <div
                     onClick={() => setPaymentMethod("ONLINE")}
                     className={`p-3 rounded border-2 cursor-pointer transition-all ${
@@ -381,7 +546,7 @@ export function CheckoutModal() {
                       </div>
                     </div>
                     <p className="text-[11px] text-charcoal-600 mt-1">
-                      UPI, NetBanking, Credit/Debit Cards.
+                      UPI, Cards, NetBanking.
                     </p>
                   </div>
                 </div>
@@ -397,12 +562,12 @@ export function CheckoutModal() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-gold-400" />
-                      <span>Transmitting Order to Cloud Vault...</span>
+                      <span>Confirming Bolera Order...</span>
                     </>
                   ) : (
                     <>
                       <span>
-                        Confirm Order • Pay ₹{totalAmount} ({paymentMethod === "COD" ? "Cash on Delivery" : "Online"})
+                        Place Order • Pay ₹{totalAmount} ({paymentMethod === "COD" ? "Cash on Delivery" : "Online"})
                       </span>
                       <ArrowRight className="w-4 h-4 text-gold-400" />
                     </>
@@ -415,11 +580,12 @@ export function CheckoutModal() {
                     <span>100% Insured Transit</span>
                   </div>
                   <span>•</span>
-                  <span>⚡ Dispatched Within 12 Hours</span>
+                  <span>⚡ Fastly Shipped Within 12 Hours</span>
                 </div>
               </div>
             </form>
           </div>
+        )}
       </div>
     </div>
   );

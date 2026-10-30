@@ -32,21 +32,27 @@ export function Header({ onSearchChange }: HeaderProps) {
           {/* Repeating sequence 1 */}
           <div className="flex items-center gap-8 px-4 font-medium tracking-wider">
             <span className="flex items-center gap-2">
-              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-gold-400 font-bold">⚡ Bolera</span>
               <span className="text-cream-400">|</span>
-              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+              <span className="text-cream-200">Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-gold-300 font-semibold">Har Ek Maal ₹99 Flat Store - All Items at Just ₹99!</span>
             </span>
             <span className="text-gold-500/70">✦</span>
             <span className="flex items-center gap-2">
-              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-gold-400 font-bold">⚡ Bolera</span>
               <span className="text-cream-400">|</span>
-              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+              <span className="text-cream-200">Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-gold-300 font-semibold">Har Ek Maal ₹99 Flat Store - All Items at Just ₹99!</span>
             </span>
             <span className="text-gold-500/70">✦</span>
             <span className="flex items-center gap-2">
-              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-gold-400 font-bold">⚡ Bolera</span>
               <span className="text-cream-400">|</span>
-              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+              <span className="text-cream-200">Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-gold-300 font-semibold">Har Ek Maal ₹99 Flat Store - All Items at Just ₹99!</span>
             </span>
             <span className="text-gold-500/70">✦</span>
           </div>
@@ -54,21 +60,27 @@ export function Header({ onSearchChange }: HeaderProps) {
           {/* Repeating sequence 2 (for seamless loop) */}
           <div className="flex items-center gap-8 px-4 font-medium tracking-wider">
             <span className="flex items-center gap-2">
-              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-gold-400 font-bold">⚡ Bolera</span>
               <span className="text-cream-400">|</span>
-              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+              <span className="text-cream-200">Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-gold-300 font-semibold">Har Ek Maal ₹99 Flat Store - All Items at Just ₹99!</span>
             </span>
             <span className="text-gold-500/70">✦</span>
             <span className="flex items-center gap-2">
-              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-gold-400 font-bold">⚡ Bolera</span>
               <span className="text-cream-400">|</span>
-              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+              <span className="text-cream-200">Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-gold-300 font-semibold">Har Ek Maal ₹99 Flat Store - All Items at Just ₹99!</span>
             </span>
             <span className="text-gold-500/70">✦</span>
             <span className="flex items-center gap-2">
-              <span className="text-gold-400 font-bold">⚡ Fastly Shipped Within 12 Hours</span>
+              <span className="text-gold-400 font-bold">⚡ Bolera</span>
               <span className="text-cream-400">|</span>
-              <span className="text-cream-200">Exclusive Ladies & Gents Ornaments at Flat <strong className="text-gold-400 font-semibold">₹99 Wholesale Price</strong></span>
+              <span className="text-cream-200">Fastly Shipped Within 12 Hours</span>
+              <span className="text-cream-400">|</span>
+              <span className="text-gold-300 font-semibold">Har Ek Maal ₹99 Flat Store - All Items at Just ₹99!</span>
             </span>
             <span className="text-gold-500/70">✦</span>
           </div>
@@ -81,11 +93,11 @@ export function Header({ onSearchChange }: HeaderProps) {
           {/* Left: Brand Identity */}
           <div className="flex items-center gap-2 sm:gap-6 min-w-0">
             <Link href="/" className="group flex flex-col min-w-0">
-              <span className="font-serif text-xl sm:text-2xl md:text-3xl tracking-wider text-charcoal-900 font-bold group-hover:text-gold-600 transition-colors truncate">
-                ATELIER 99
+              <span className="font-serif text-2xl sm:text-3xl md:text-4xl tracking-widest text-charcoal-900 font-bold group-hover:text-gold-600 transition-colors truncate">
+                BOLERA
               </span>
-              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.2em] sm:tracking-[0.3em] text-gold-600 font-medium -mt-0.5 whitespace-nowrap">
-                Royal Ornaments Vault
+              <span className="text-[8px] sm:text-[10px] uppercase tracking-[0.25em] sm:tracking-[0.35em] text-gold-600 font-bold -mt-0.5 whitespace-nowrap">
+                Har Ek Maal ₹99
               </span>
             </Link>
           </div>
@@ -96,7 +108,7 @@ export function Header({ onSearchChange }: HeaderProps) {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-charcoal-600" />
               <input
                 type="text"
-                placeholder="Search Ladies Kundan, Gents Kada, Rings, Chains..."
+                placeholder="Search Bolera collection at flat ₹99..."
                 value={searchValue}
                 onChange={handleSearchInput}
                 className="w-full pl-10 pr-4 py-2 text-sm bg-cream-200/70 border border-cream-300 rounded-full text-charcoal-850 placeholder:text-charcoal-600 focus:outline-none focus:border-gold-500 focus:bg-white transition-all"

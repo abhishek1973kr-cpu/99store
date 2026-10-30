@@ -251,24 +251,24 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Pricing Box (MRP ₹349 Strikethrough vs Flat Wholesale ₹99) */}
+              {/* Pricing Box (MRP ₹349 Strikethrough vs Flat Wholesale ₹99 in Royal Gold) */}
               <div className="p-4 bg-cream-50 rounded border border-cream-300 space-y-1.5">
                 <div className="flex items-baseline gap-3">
                   <span className="text-xs uppercase tracking-wider text-charcoal-500 font-semibold">
-                    Wholesale Price:
+                    Universal Price:
                   </span>
-                  <span className="font-serif text-3xl font-bold text-charcoal-900">
-                    ₹{product.price}
+                  <span className="font-serif text-3xl sm:text-4xl font-bold text-gold-500">
+                    ₹{product.price || 99}
                   </span>
-                  <span className="text-base text-charcoal-400 line-through font-serif">
-                    MRP ₹{product.mrp}
+                  <span className="text-base sm:text-lg text-charcoal-400 line-through font-serif font-light">
+                    MRP ₹{product.mrp || 349}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-emerald-800 font-bold bg-emerald-100 px-2 py-0.5 rounded">
-                    Save ₹{product.mrp - product.price} Flat (72% Off Direct Artisan Deal)
+                    Save ₹{(product.mrp || 349) - (product.price || 99)} Flat • Wholesale Deal (Har Ek Maal ₹99)
                   </span>
-                  <span className="text-[11px] text-charcoal-500">Insured Shipping</span>
+                  <span className="text-[11px] text-charcoal-500">• Cash on Delivery</span>
                 </div>
               </div>
 
@@ -457,15 +457,15 @@ export default function ProductDetailPage() {
                     <div className="pt-2 border-t border-cream-200 space-y-2">
                       <div className="flex items-baseline justify-between">
                         <div className="flex items-baseline gap-2">
-                          <span className="font-serif font-bold text-charcoal-900 text-lg">
-                            ₹{p.price}
+                          <span className="font-serif font-bold text-gold-500 text-lg">
+                            ₹{p.price || 99}
                           </span>
-                          <span className="text-xs text-charcoal-400 line-through font-serif">
-                            MRP ₹{p.mrp}
+                          <span className="text-xs text-charcoal-400 line-through font-serif font-light">
+                            MRP ₹{p.mrp || 349}
                           </span>
                         </div>
                         <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded">
-                          Save ₹{p.mrp - p.price}
+                          Save ₹{(p.mrp || 349) - (p.price || 99)}
                         </span>
                       </div>
 

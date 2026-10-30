@@ -94,13 +94,13 @@ export function Hero({ onExploreClick }: { onExploreClick: () => void }) {
             <div className="inline-flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 rounded-full bg-cream-200/90 backdrop-blur-md border border-gold-400/50 text-charcoal-800 text-[10px] sm:text-xs tracking-wider uppercase shadow-sm max-w-full text-center">
               <div className="flex items-center gap-1.5">
                 <Crown className="w-3.5 h-3.5 text-gold-600 shrink-0" />
-                <span className="font-semibold text-charcoal-900">Royal Ornaments Vault</span>
+                <span className="font-semibold text-charcoal-900">Bolera Exclusive Boutique</span>
               </div>
               <span className="hidden xs:inline text-gold-400">•</span>
               <div className="flex items-center gap-1.5">
-                <span className="text-charcoal-600 line-through text-[10px] sm:text-xs">₹349</span>
+                <span className="text-charcoal-600 line-through text-[10px] sm:text-xs">MRP ₹349</span>
                 <span className="text-emerald-800 font-bold bg-emerald-100/90 px-2 py-0.5 rounded text-[10px] sm:text-xs">
-                  Wholesale Flat ₹99
+                  Har Ek Maal ₹99
                 </span>
               </div>
             </div>
@@ -110,41 +110,40 @@ export function Hero({ onExploreClick }: { onExploreClick: () => void }) {
           <div className="flex justify-center items-center gap-2">
             <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold uppercase tracking-widest text-gold-700 bg-gold-400/20 px-3 py-1 rounded-full border border-gold-400/30">
               <Sparkles className="w-3 h-3 text-gold-600" />
-              <span>{active.badge || "Exclusive Collection"}</span>
+              <span>{active.badge || "Har Ek Maal ₹99"}</span>
             </span>
           </div>
 
-          {/* Master Serif Headline - Sized responsively to never clip or break awkwardly */}
+          {/* Master Serif Headline */}
           <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl text-charcoal-900 leading-[1.18] tracking-tight break-words px-2">
-            Imperial Ornamentation.{" "}
+            Har Ek Maal Flat ₹99.{" "}
             <span className="italic font-normal block sm:inline text-gold-600">
-              Wholesale Flat ₹99.
+              Universal Luxury Store.
             </span>
           </h1>
 
           {/* Dynamic Slide Subheading */}
           <p className="text-xs sm:text-base md:text-lg text-charcoal-700 max-w-2xl mx-auto font-light leading-relaxed px-2 transition-all duration-500">
             {active.subtitle ||
-              "Royal Kundan haar sets, Chandbali jhumkas, and filigree bangles for ladies — paired with sovereign lion kadas, signet rings, and curb chains for gentlemen. Every piece carries an original MRP of ₹349, offered directly at an exclusive wholesale rate of ₹99."}
+              "Every single item in the Bolera vault is universally priced at flat ₹99 (Benchmark Retail MRP ₹349). From royal Kundan sets to modern lifestyle ornaments, discover luxury quality with fast 12-hour dispatch and Cash on Delivery."}
           </p>
 
-          {/* CTA Buttons - Mobile-first stacked on small screens, row on sm+ */}
+          {/* CTA Buttons */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto px-2">
             <button
               onClick={onExploreClick}
               className="w-full sm:w-auto px-7 py-3 sm:py-3.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs sm:text-sm font-semibold tracking-widest uppercase rounded shadow-classic hover:shadow-classic-hover transition-all flex items-center justify-center gap-2 group active:scale-95"
             >
-              <span>Explore 25 Vault Pieces</span>
+              <span>Explore ₹99 Catalog</span>
               <ArrowDown className="w-4 h-4 text-gold-400 group-hover:translate-y-0.5 transition-transform" />
             </button>
 
-            <a
-              href="#ladies"
+            <button
               onClick={onExploreClick}
               className="w-full sm:w-auto px-6 py-3 sm:py-3.5 bg-cream-200 hover:bg-cream-300 text-charcoal-850 text-xs sm:text-sm font-medium tracking-wider uppercase rounded border border-cream-300 transition-colors text-center active:scale-95"
             >
-              Ladies & Gents Collections
-            </a>
+              All Items Universal ₹99
+            </button>
           </div>
 
           {/* Slide Indicator Dots (Clickable with active gold accent) */}
