@@ -18,7 +18,9 @@ export const isFirebaseConfigured = (): boolean => {
     projectId &&
     apiKey &&
     projectId !== "ninety-nine-ornaments" &&
-    !apiKey.includes("Dummy")
+    projectId !== "your-project-id" &&
+    !apiKey.includes("Dummy") &&
+    !apiKey.includes("ExampleKey")
   );
 };
 

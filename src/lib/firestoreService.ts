@@ -39,8 +39,13 @@ export async function saveOrderToFirestore(order: Order): Promise<boolean> {
       orderDocRef,
       {
         ...order,
+        customerName: order.customer.fullName,
+        customerPhone: order.customer.phone,
+        customerAddress: `${order.customer.addressLine1}${order.customer.addressLine2 ? ", " + order.customer.addressLine2 : ""}${order.customer.landmark ? " (Near " + order.customer.landmark + ")" : ""}, ${order.customer.city}, ${order.customer.state} - ${order.customer.pincode}`,
+        paymentMethodName: order.paymentMethod === "COD" ? "Cash on Delivery (COD)" : "Online Prepaid",
         createdAt: order.createdAt || new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        timestamp: Date.now(),
       },
       { merge: true }
     );

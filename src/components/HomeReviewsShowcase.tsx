@@ -300,23 +300,23 @@ export function HomeReviewsShowcase() {
           <div className="flex items-center gap-3 self-end sm:self-auto">
             <button
               onClick={() => setIsWriteReviewOpen(true)}
-              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider bg-gold-400 hover:bg-gold-500 text-charcoal-900 px-4 py-2.5 rounded shadow-sm transition-all"
+              className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider bg-gold-400 hover:bg-gold-500 text-charcoal-900 px-4 py-2.5 rounded-xl shadow-sm transition-all"
             >
               <MessageSquarePlus className="w-3.5 h-3.5" />
               <span>Share Experience</span>
             </button>
 
-            <div className="hidden sm:flex items-center gap-1.5 border border-cream-300 rounded p-1 bg-white">
+            <div className="hidden sm:flex items-center gap-1.5 border border-cream-300 rounded-xl p-1 bg-white">
               <button
                 onClick={() => scroll("left")}
-                className="p-1.5 rounded hover:bg-cream-200 text-charcoal-700 hover:text-charcoal-900 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-cream-200 text-charcoal-700 hover:text-charcoal-900 transition-colors"
                 aria-label="Scroll reviews left"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
               <button
                 onClick={() => scroll("right")}
-                className="p-1.5 rounded hover:bg-cream-200 text-charcoal-700 hover:text-charcoal-900 transition-colors"
+                className="p-1.5 rounded-lg hover:bg-cream-200 text-charcoal-700 hover:text-charcoal-900 transition-colors"
                 aria-label="Scroll reviews right"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -327,7 +327,7 @@ export function HomeReviewsShowcase() {
 
         {/* Success toast after submitting review */}
         {submittedBanner && (
-          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded text-xs flex items-center justify-between animate-fadeIn">
+          <div className="mb-6 p-4 bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-xl text-xs flex items-center justify-between animate-fadeIn">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-700" />
               <span>Thank you for sharing your royal review! It has been posted to our customer feedback archive.</span>

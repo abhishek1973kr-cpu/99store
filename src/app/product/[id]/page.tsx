@@ -61,7 +61,7 @@ export default function ProductDetailPage() {
           </p>
           <Link
             href="/"
-            className="inline-flex items-center gap-2 px-5 py-2.5 bg-charcoal-900 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-charcoal-900 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-charcoal-850 transition-all shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Vault Collection</span>

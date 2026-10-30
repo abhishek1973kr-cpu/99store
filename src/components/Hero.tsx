@@ -99,7 +99,7 @@ export function Hero({ onExploreClick }: { onExploreClick: () => void }) {
               <span className="hidden xs:inline text-gold-400">•</span>
               <div className="flex items-center gap-1.5">
                 <span className="text-charcoal-600 line-through text-[10px] sm:text-xs">MRP ₹349</span>
-                <span className="text-emerald-800 font-bold bg-emerald-100/90 px-2 py-0.5 rounded text-[10px] sm:text-xs">
+                <span className="text-emerald-800 font-bold bg-emerald-100/90 px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs">
                   Har Ek Maal ₹99
                 </span>
               </div>
@@ -132,7 +132,7 @@ export function Hero({ onExploreClick }: { onExploreClick: () => void }) {
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md sm:max-w-none mx-auto px-2">
             <button
               onClick={onExploreClick}
-              className="w-full sm:w-auto px-7 py-3 sm:py-3.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs sm:text-sm font-semibold tracking-widest uppercase rounded shadow-classic hover:shadow-classic-hover transition-all flex items-center justify-center gap-2 group active:scale-95"
+              className="w-full sm:w-auto px-8 py-3.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs sm:text-sm font-semibold tracking-widest uppercase rounded-full shadow-classic hover:shadow-classic-hover transition-all flex items-center justify-center gap-2 group active:scale-95"
             >
               <span>Explore ₹99 Catalog</span>
               <ArrowDown className="w-4 h-4 text-gold-400 group-hover:translate-y-0.5 transition-transform" />
@@ -140,7 +140,7 @@ export function Hero({ onExploreClick }: { onExploreClick: () => void }) {
 
             <button
               onClick={onExploreClick}
-              className="w-full sm:w-auto px-6 py-3 sm:py-3.5 bg-cream-200 hover:bg-cream-300 text-charcoal-850 text-xs sm:text-sm font-medium tracking-wider uppercase rounded border border-cream-300 transition-colors text-center active:scale-95"
+              className="w-full sm:w-auto px-7 py-3.5 bg-cream-200 hover:bg-cream-300 text-charcoal-850 text-xs sm:text-sm font-medium tracking-wider uppercase rounded-full border border-cream-300 transition-colors text-center active:scale-95"
             >
               All Items Universal ₹99
             </button>
@@ -164,7 +164,7 @@ export function Hero({ onExploreClick }: { onExploreClick: () => void }) {
 
           {/* Assurance Tickers (Spacious & Clean for Mobile & Desktop) */}
           <div className="pt-6 sm:pt-8 border-t border-cream-300/80 grid grid-cols-1 sm:grid-cols-3 gap-3 text-left max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 p-2 rounded bg-white/50 sm:bg-transparent border sm:border-0 border-cream-200">
+            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/50 sm:bg-transparent border sm:border-0 border-cream-200">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gold-400/20 flex items-center justify-center shrink-0">
                 <span className="font-serif font-bold text-xs text-gold-700">₹99</span>
               </div>
@@ -176,7 +176,7 @@ export function Hero({ onExploreClick }: { onExploreClick: () => void }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2 rounded bg-white/50 sm:bg-transparent border sm:border-0 border-cream-200">
+            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/50 sm:bg-transparent border sm:border-0 border-cream-200">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gold-400/20 flex items-center justify-center shrink-0">
                 <Layers className="w-4 h-4 text-gold-700" />
               </div>
@@ -188,7 +188,7 @@ export function Hero({ onExploreClick }: { onExploreClick: () => void }) {
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-2 rounded bg-white/50 sm:bg-transparent border sm:border-0 border-cream-200">
+            <div className="flex items-center gap-3 p-2.5 rounded-2xl bg-white/50 sm:bg-transparent border sm:border-0 border-cream-200">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gold-400/20 flex items-center justify-center shrink-0">
                 <ShieldCheck className="w-4 h-4 text-gold-700" />
               </div>

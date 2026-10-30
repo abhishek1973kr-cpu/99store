@@ -395,20 +395,22 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
         return updated;
       });
 
-      // 2. Direct write to Firebase Firestore (Real-time Cloud Database)
-      saveOrderToFirestore(newOrder).catch((fsErr) => {
-        console.warn("Direct Firestore order write notice:", fsErr);
-      });
-
-      // 3. Transmit to Cloud / Central Server Database
+      // 2. Direct write to Firebase Firestore (Real-time Cloud Database) & Server API in parallel
       try {
-        const savedCloudOrder = await createOrderApi(newOrder);
-        if (savedCloudOrder) {
-          // Notify other tabs
-          broadcastRef.current?.postMessage({ type: "NEW_ORDER", payload: savedCloudOrder });
-        }
+        await Promise.allSettled([
+          saveOrderToFirestore(newOrder).catch((fsErr) => {
+            console.warn("Direct Firestore order write notice:", fsErr);
+          }),
+          createOrderApi(newOrder).then((savedCloudOrder) => {
+            if (savedCloudOrder) {
+              broadcastRef.current?.postMessage({ type: "NEW_ORDER", payload: savedCloudOrder });
+            }
+          }).catch((err) => {
+            console.error("Cloud DB order creation error:", err);
+          }),
+        ]);
       } catch (err) {
-        console.error("Cloud DB order creation error:", err);
+        console.warn("Order synchronization notice:", err);
       }
 
       // 4. Clear cart items

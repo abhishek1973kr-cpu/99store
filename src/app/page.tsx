@@ -100,7 +100,7 @@ export default function StorefrontPage() {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
                 aria-label="Sort products by"
-                className="text-xs font-medium py-2.5 px-3.5 bg-white border border-cream-300 rounded text-charcoal-850 focus:border-gold-500 focus:outline-none shadow-xs"
+                className="text-xs font-medium py-2.5 px-3.5 bg-white border border-cream-300 rounded-xl text-charcoal-850 focus:border-gold-500 focus:outline-none shadow-xs"
               >
                 <option value="featured">Featured Collection</option>
                 <option value="rating">Highest Rated</option>
@@ -144,7 +144,7 @@ export default function StorefrontPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-20 bg-white rounded border border-cream-300 p-8 space-y-4">
+            <div className="text-center py-20 bg-white rounded-3xl border border-cream-300 p-8 space-y-4">
               <div className="w-14 h-14 mx-auto rounded-full bg-cream-200 flex items-center justify-center text-charcoal-500">
                 <SlidersHorizontal className="w-6 h-6" />
               </div>
@@ -159,7 +159,7 @@ export default function StorefrontPage() {
                   setSelectedCategory("All Items");
                   setSearchQuery("");
                 }}
-                className="px-5 py-2.5 bg-charcoal-900 text-cream-100 text-xs uppercase tracking-wider font-semibold rounded"
+                className="px-5 py-2.5 bg-charcoal-900 text-cream-100 text-xs uppercase tracking-wider font-semibold rounded-xl"
               >
                 Clear All Filters
               </button>
@@ -177,7 +177,7 @@ export default function StorefrontPage() {
               transition={{ duration: 0.6 }}
               className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-10"
             >
-              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300 hover:border-gold-400 transition-colors shadow-xs">
+              <div className="space-y-3 p-6 sm:p-8 bg-white/70 backdrop-blur-sm rounded-3xl border border-cream-300 hover:border-gold-400 transition-colors shadow-sm">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
                   <Tag className="w-5 h-5" />
                 </div>
@@ -189,7 +189,7 @@ export default function StorefrontPage() {
                 </p>
               </div>
 
-              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300 hover:border-gold-400 transition-colors shadow-xs">
+              <div className="space-y-3 p-6 sm:p-8 bg-white/70 backdrop-blur-sm rounded-3xl border border-cream-300 hover:border-gold-400 transition-colors shadow-sm">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
                   <Clock className="w-5 h-5" />
                 </div>
@@ -201,7 +201,7 @@ export default function StorefrontPage() {
                 </p>
               </div>
 
-              <div className="space-y-3 p-6 sm:p-7 bg-white/70 backdrop-blur-sm rounded border border-cream-300 hover:border-gold-400 transition-colors shadow-xs">
+              <div className="space-y-3 p-6 sm:p-8 bg-white/70 backdrop-blur-sm rounded-3xl border border-cream-300 hover:border-gold-400 transition-colors shadow-sm">
                 <div className="w-10 h-10 rounded-full bg-charcoal-900 text-gold-400 flex items-center justify-center">
                   <ShieldCheck className="w-5 h-5" />
                 </div>
