@@ -111,7 +111,7 @@ export function CustomerReviews({
 
         <button
           onClick={() => setIsFormOpen(!isFormOpen)}
-          className="px-4 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded border border-charcoal-800 flex items-center gap-2 transition-all shadow-sm"
+          className="px-4 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded-xl border border-charcoal-800 flex items-center gap-2 transition-all shadow-sm"
         >
           <MessageSquarePlus className="w-3.5 h-3.5 text-gold-400" />
           <span>{isFormOpen ? "Close Form" : "Write a Review"}</span>
@@ -119,7 +119,7 @@ export function CustomerReviews({
       </div>
 
       {/* Ratings Overview Summary Card */}
-      <div className="bg-cream-200/60 p-6 rounded border border-cream-300 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+      <div className="bg-cream-200/60 p-6 rounded-2xl border border-cream-300 grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
         {/* Left: Big Score */}
         <div className="text-center md:border-r md:border-cream-300 pr-4">
           <span className="font-serif text-5xl font-bold text-charcoal-900 block">
@@ -186,7 +186,7 @@ export function CustomerReviews({
         </div>
 
         {/* Right: Quality Guarantee Badge */}
-        <div className="bg-white p-4 rounded border border-cream-200 text-center space-y-1.5">
+        <div className="bg-white p-4 rounded-xl border border-cream-200 text-center space-y-1.5 shadow-sm">
           <ShieldCheck className="w-6 h-6 text-emerald-800 mx-auto" />
           <h4 className="font-serif font-bold text-xs uppercase tracking-wider text-charcoal-900">
             100% Genuine Craftsmanship
@@ -206,14 +206,14 @@ export function CustomerReviews({
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.3 }}
             onSubmit={handleSubmitReview}
-            className="bg-white p-6 rounded border border-gold-400/40 shadow-classic space-y-4 overflow-hidden"
+            className="bg-white p-6 sm:p-8 rounded-2xl border border-gold-400/40 shadow-classic space-y-4 overflow-hidden"
           >
             <h4 className="font-serif text-lg font-bold text-charcoal-900 border-b border-cream-200 pb-2">
               Share Your Experience with {productName}
             </h4>
 
             {formSubmitted ? (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded text-center flex items-center justify-center gap-2">
+              <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-xl text-center flex items-center justify-center gap-2">
                 <CheckCircle className="w-4 h-4 text-emerald-700" />
                 <span>Thank you! Your verified review has been published to the royal archive.</span>
               </div>
@@ -230,7 +230,7 @@ export function CustomerReviews({
                       placeholder="e.g. Sanyukta Rathore"
                       value={newAuthor}
                       onChange={(e) => setNewAuthor(e.target.value)}
-                      className="w-full px-3 py-2 text-xs bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 text-xs bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                     />
                   </div>
 
@@ -243,7 +243,7 @@ export function CustomerReviews({
                       placeholder="e.g. Jaipur, Rajasthan"
                       value={newCity}
                       onChange={(e) => setNewCity(e.target.value)}
-                      className="w-full px-3 py-2 text-xs bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 text-xs bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                     />
                   </div>
 
@@ -254,7 +254,7 @@ export function CustomerReviews({
                     <select
                       value={newRating}
                       onChange={(e) => setNewRating(Number(e.target.value))}
-                      className="w-full px-3 py-2 text-xs bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none font-semibold text-charcoal-900"
+                      className="w-full px-3.5 py-2.5 text-xs bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none font-semibold text-charcoal-900"
                     >
                       <option value={5}>5 Stars - Flawless Royal Quality</option>
                       <option value={4}>4 Stars - Very Pleased</option>
@@ -273,7 +273,7 @@ export function CustomerReviews({
                     placeholder="e.g. Exceptional 24K luster and heavy solid feel"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 text-xs bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                   />
                 </div>
 
@@ -287,7 +287,7 @@ export function CustomerReviews({
                     placeholder="Describe the craftsmanship, weight, stone settings, and unboxing..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    className="w-full px-3 py-2 text-xs bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 text-xs bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                   />
                 </div>
 
@@ -295,13 +295,13 @@ export function CustomerReviews({
                   <button
                     type="button"
                     onClick={() => setIsFormOpen(false)}
-                    className="px-4 py-2 bg-cream-100 hover:bg-cream-200 text-charcoal-800 text-xs font-semibold uppercase rounded border border-cream-300"
+                    className="px-4 py-2.5 bg-cream-100 hover:bg-cream-200 text-charcoal-800 text-xs font-semibold uppercase rounded-xl border border-cream-300 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded"
+                    className="px-5 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded-xl shadow-md transition-all"
                   >
                     Submit Review
                   </button>
@@ -317,7 +317,7 @@ export function CustomerReviews({
         {displayedReviews.map((rev) => (
           <div
             key={rev.id}
-            className="p-5 rounded bg-white border border-cream-300 shadow-sm space-y-3"
+            className="p-5 sm:p-6 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-3"
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center gap-2">

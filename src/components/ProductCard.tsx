@@ -33,34 +33,34 @@ export function ProductCard({ product }: ProductCardProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       onClick={() => setActiveProductModal(product)}
-      className="group relative bg-white border border-cream-300 rounded-sm overflow-hidden flex flex-col hover:border-gold-400 hover:shadow-classic transition-all duration-300 cursor-pointer"
+      className="group relative bg-white border border-cream-300/80 rounded-3xl overflow-hidden flex flex-col hover:border-gold-400 hover:shadow-xl transition-all duration-300 cursor-pointer p-3 sm:p-3.5"
     >
-      {/* Top Image Container */}
-      <div className="relative aspect-[4/3] bg-cream-200 overflow-hidden">
+      {/* Top Image Container with Smooth Rounded Corners */}
+      <div className="relative aspect-[4/3] bg-cream-200 rounded-2xl overflow-hidden shadow-inner">
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1 items-start">
-          <span className="text-[10px] uppercase tracking-widest font-semibold px-2.5 py-1 rounded bg-charcoal-900/90 text-gold-300 backdrop-blur-sm border border-gold-400/30 flex items-center gap-1 shadow-sm">
+        <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start">
+          <span className="text-[10px] uppercase tracking-widest font-semibold px-3 py-1 rounded-full bg-charcoal-900/90 text-gold-300 backdrop-blur-sm border border-gold-400/30 flex items-center gap-1.5 shadow-sm">
             <Sparkles className="w-2.5 h-2.5 text-gold-400" />
             <span>{product.badge || "Wholesale Deal"}</span>
           </span>
-          <span className="text-[9px] uppercase tracking-wider font-bold px-2 py-0.5 rounded bg-emerald-800 text-cream-100 shadow-sm">
+          <span className="text-[9px] uppercase tracking-wider font-bold px-2.5 py-0.5 rounded-full bg-emerald-800 text-cream-100 shadow-sm">
             {discountPercent}% OFF
           </span>
         </div>
 
         {/* Stock warning */}
         {product.stock <= 5 && product.stock > 0 && (
-          <span className="absolute top-3 right-3 z-10 text-[10px] uppercase tracking-wider font-medium px-2 py-0.5 rounded bg-amber-50 text-amber-800 border border-amber-200">
+          <span className="absolute top-3 right-3 z-10 text-[10px] uppercase tracking-wider font-medium px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200 shadow-sm">
             Only {product.stock} left
           </span>
         )}
         {product.stock === 0 && (
-          <span className="absolute top-3 right-3 z-10 text-[10px] uppercase tracking-wider font-semibold px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-200">
+          <span className="absolute top-3 right-3 z-10 text-[10px] uppercase tracking-wider font-semibold px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200 shadow-sm">
             Sold Out
           </span>
         )}
@@ -74,29 +74,29 @@ export function ProductCard({ product }: ProductCardProps) {
         />
 
         {/* Clean View Button Hover Overlay */}
-        <div className="absolute inset-0 bg-charcoal-900/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+        <div className="absolute inset-0 bg-charcoal-900/35 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
           <button
             onClick={handleOpenDetails}
-            className="px-5 py-2.5 bg-cream-100/95 text-charcoal-900 text-xs font-semibold uppercase tracking-wider rounded-sm shadow-md flex items-center gap-1.5 hover:bg-white hover:text-gold-700 transition-all hover:scale-105"
+            className="px-5 py-2.5 bg-cream-100/95 text-charcoal-900 text-xs font-semibold uppercase tracking-wider rounded-full shadow-lg flex items-center gap-1.5 hover:bg-white hover:text-gold-700 transition-all hover:scale-105 backdrop-blur-sm"
           >
             <Eye className="w-3.5 h-3.5 text-gold-600" />
-            <span>View Ornament</span>
+            <span>View Details</span>
           </button>
         </div>
       </div>
 
-      {/* Content Container */}
-      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+      {/* Content Container - Spacious & Airy */}
+      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
           {/* Category & Rating */}
-          <div className="flex items-center justify-between text-xs text-charcoal-600 mb-1.5">
-            <span className="uppercase tracking-wider text-[11px] font-semibold text-gold-700 bg-gold-400/10 px-2 py-0.5 rounded">
+          <div className="flex items-center justify-between text-xs text-charcoal-600 mb-2">
+            <span className="uppercase tracking-wider text-[11px] font-semibold text-gold-700 bg-gold-400/15 px-3 py-1 rounded-full">
               {product.category}
             </span>
             <div className="flex items-center gap-1 text-charcoal-700">
               <Star className="w-3.5 h-3.5 fill-gold-400 text-gold-400" />
-              <span className="font-medium text-xs">{product.rating.toFixed(1)}</span>
-              <span className="text-[11px] text-charcoal-500">({product.reviewsCount})</span>
+              <span className="font-semibold text-xs">{product.rating.toFixed(1)}</span>
+              <span className="text-[11px] text-charcoal-500 font-light">({product.reviewsCount})</span>
             </div>
           </div>
 
@@ -106,16 +106,16 @@ export function ProductCard({ product }: ProductCardProps) {
           </h3>
 
           {/* Tagline */}
-          <p className="text-xs text-charcoal-600 line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-xs text-charcoal-600 line-clamp-2 mt-1 leading-relaxed font-light">
             {product.tagline || product.description}
           </p>
         </div>
 
         {/* Price & Action Row (MRP ₹349 Struck-Through vs Flat ₹99 in Royal Gold) */}
-        <div className="pt-3 border-t border-cream-200">
-          <div className="flex flex-wrap items-baseline justify-between gap-1 mb-3">
+        <div className="pt-3 border-t border-cream-200/80">
+          <div className="flex flex-wrap items-baseline justify-between gap-1 mb-3.5">
             <div>
-              <div className="flex flex-wrap items-baseline gap-1.5 sm:gap-2">
+              <div className="flex flex-wrap items-baseline gap-2">
                 <span className="font-serif text-2xl sm:text-3xl font-bold text-gold-500 tracking-tight">
                   ₹{product.price || 99}
                 </span>
@@ -127,43 +127,31 @@ export function ProductCard({ product }: ProductCardProps) {
                 Save ₹{(product.mrp || 349) - (product.price || 99)} • Har Ek Maal ₹99
               </span>
             </div>
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-gold-700 font-bold bg-gold-400/20 px-2 py-0.5 sm:py-1 rounded border border-gold-400/40">
+            <span className="text-[10px] uppercase tracking-wider text-gold-700 font-bold bg-gold-400/20 px-3 py-1 rounded-full border border-gold-400/40">
               Wholesale Deal
             </span>
           </div>
 
-          {/* Action Buttons: Sophisticated "View" + Quick "Add" (Spacious Native Mobile Touch Targets) */}
+          {/* Action Buttons: Rounded Smooth Buttons (View + Buy Now) */}
           <div className="grid grid-cols-2 gap-2.5 pt-1">
             <button
               onClick={handleOpenDetails}
-              className="w-full min-h-[44px] sm:min-h-[40px] py-2.5 px-3 rounded text-xs font-semibold uppercase tracking-wider bg-cream-100 hover:bg-cream-200 border border-cream-300 text-charcoal-850 hover:border-gold-400 active:scale-98 transition-all flex items-center justify-center gap-1.5 shadow-xs"
+              className="w-full min-h-[44px] py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-cream-100 hover:bg-cream-200 border border-cream-300 text-charcoal-850 hover:border-gold-400 active:scale-98 transition-all flex items-center justify-center gap-1.5 shadow-xs"
             >
               <Eye className="w-4 h-4 text-gold-600 shrink-0" />
               <span>View</span>
             </button>
 
             <button
-              onClick={handleAddToCart}
+              onClick={(e) => {
+                e.stopPropagation();
+                buyNow(product);
+              }}
               disabled={product.stock === 0}
-              className={`w-full min-h-[44px] sm:min-h-[40px] py-2.5 px-3 rounded text-xs font-semibold uppercase tracking-wider border active:scale-98 transition-all flex items-center justify-center gap-1.5 shadow-xs ${
-                addedAnimation
-                  ? "bg-emerald-700 border-emerald-700 text-white"
-                  : product.stock === 0
-                  ? "bg-cream-200 text-charcoal-400 border-cream-300 cursor-not-allowed"
-                  : "bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 hover:text-gold-300 border-charcoal-900"
-              }`}
+              className="w-full min-h-[44px] py-2.5 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 hover:text-gold-300 border border-charcoal-900 shadow-md active:scale-98 transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
             >
-              {addedAnimation ? (
-                <>
-                  <Check className="w-4 h-4 shrink-0" />
-                  <span>Added</span>
-                </>
-              ) : (
-                <>
-                  <ShoppingBag className="w-4 h-4 text-gold-400 shrink-0" />
-                  <span>Add</span>
-                </>
-              )}
+              <ShoppingBag className="w-4 h-4 text-gold-400 shrink-0" />
+              <span>Buy Now</span>
             </button>
           </div>
         </div>

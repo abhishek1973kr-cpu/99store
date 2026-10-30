@@ -17,9 +17,9 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-charcoal-900/80 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-charcoal-900/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
       <div
-        className="relative bg-cream-100 w-full max-w-3xl rounded-sm border border-cream-300 shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh]"
+        className="relative bg-cream-100 w-full max-w-3xl rounded-3xl border border-gold-400/30 shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -271,14 +271,14 @@ export function PolicyModal({ isOpen, onClose, initialPolicy = "shipping" }: Pol
           <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
             <button
               onClick={() => window.print()}
-              className="px-3.5 py-2 bg-white hover:bg-cream-100 text-charcoal-800 text-xs font-semibold uppercase tracking-wider rounded border border-cream-300 flex items-center gap-1.5"
+              className="px-4 py-2.5 bg-white hover:bg-cream-100 text-charcoal-800 text-xs font-semibold uppercase tracking-wider rounded-xl border border-cream-300 flex items-center gap-1.5 shadow-sm transition-all"
             >
               <Printer className="w-3.5 h-3.5 text-gold-600" />
               <span>Print Policy</span>
             </button>
             <button
               onClick={onClose}
-              className="px-5 py-2 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded"
+              className="px-5 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded-xl shadow-md transition-all"
             >
               I Understand & Agree
             </button>

@@ -45,9 +45,9 @@ export function TrackOrderModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-charcoal-900/75 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-charcoal-900/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
       <div
-        className="relative bg-cream-100 w-full max-w-2xl rounded-sm border border-cream-300 shadow-2xl overflow-hidden my-6"
+        className="relative bg-cream-100 w-full max-w-2xl rounded-3xl border border-gold-400/30 shadow-2xl overflow-hidden my-6"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6 bg-charcoal-900 text-cream-100 flex items-center justify-between border-b border-charcoal-800">
@@ -76,12 +76,12 @@ export function TrackOrderModal() {
                 placeholder="Enter Order ID (e.g. ORD-99-8491) or Phone Number"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-white border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                className="w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm bg-white border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
               />
             </div>
             <button
               type="submit"
-              className="px-5 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded"
+              className="px-5 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-wider rounded-xl shadow-md transition-all"
             >
               Track
             </button>
@@ -96,7 +96,7 @@ export function TrackOrderModal() {
                   return (
                     <div
                       key={ord.id}
-                      className="p-5 rounded bg-white border border-cream-300 shadow-sm space-y-4"
+                      className="p-5 rounded-2xl bg-white border border-cream-300 shadow-sm space-y-4"
                     >
                       <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-cream-200">
                         <div>

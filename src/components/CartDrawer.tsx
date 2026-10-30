@@ -89,7 +89,7 @@ export function CartDrawer() {
                 </div>
                 <button
                   onClick={() => setIsCartOpen(false)}
-                  className="px-6 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs uppercase tracking-wider font-semibold rounded"
+                  className="px-6 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs uppercase tracking-wider font-semibold rounded-xl shadow-md transition-all"
                 >
                   Explore Collection
                 </button>
@@ -100,9 +100,9 @@ export function CartDrawer() {
                 return (
                   <div
                     key={item.product.id}
-                    className="flex gap-4 p-3.5 rounded bg-white border border-cream-200 shadow-sm"
+                    className="flex gap-4 p-3.5 rounded-2xl bg-white border border-cream-200 shadow-sm"
                   >
-                    <div className="w-20 h-20 bg-cream-200 rounded overflow-hidden shrink-0 border border-cream-300">
+                    <div className="w-20 h-20 bg-cream-200 rounded-xl overflow-hidden shrink-0 border border-cream-300">
                       <img
                         src={itemImage}
                         alt={item.product.name}
@@ -124,13 +124,13 @@ export function CartDrawer() {
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
-                        <span className="text-[10px] text-gold-700 font-semibold uppercase tracking-wider bg-gold-400/10 px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] text-gold-700 font-semibold uppercase tracking-wider bg-gold-400/10 px-2 py-0.5 rounded-full">
                           {item.product.category}
                         </span>
                       </div>
 
                       <div className="flex items-center justify-between pt-2">
-                        <div className="flex items-center border border-cream-300 rounded bg-cream-50">
+                        <div className="flex items-center border border-cream-300 rounded-lg bg-cream-50 overflow-hidden">
                           <button
                             onClick={() => updateCartQuantity(item.product.id, item.quantity - 1)}
                             className="px-2.5 py-0.5 text-xs text-charcoal-700 hover:bg-cream-200"
@@ -209,9 +209,9 @@ export function CartDrawer() {
               <div className="space-y-2">
                 <button
                   onClick={openCheckoutWithCart}
-                  className="w-full py-3.5 px-4 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-widest rounded shadow-md hover:shadow-classic-hover transition-all flex items-center justify-center gap-2 group"
+                  className="w-full py-3.5 px-4 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 text-xs font-semibold uppercase tracking-widest rounded-xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 group"
                 >
-                  <span>Proceed to Wholesale Checkout</span>
+                  <span>Proceed to Checkout • Buy Now</span>
                   <ArrowRight className="w-4 h-4 text-gold-400 group-hover:translate-x-1 transition-transform" />
                 </button>
 

@@ -226,7 +226,7 @@ export function HomeReviewsShowcase() {
           </div>
 
           {/* Aggregate Trust Metrics Card */}
-          <div className="bg-white p-4 sm:p-5 rounded border border-cream-300 shadow-sm flex items-center gap-5 shrink-0">
+          <div className="bg-white p-5 sm:p-6 rounded-3xl border border-gold-400/30 shadow-md flex items-center gap-5 shrink-0">
             <div className="text-center border-r border-cream-200 pr-5">
               <span className="font-serif text-3xl sm:text-4xl font-bold text-charcoal-900 block">
                 4.9
@@ -353,7 +353,7 @@ export function HomeReviewsShowcase() {
                 whileHover={{ y: -4 }}
                 transition={{ duration: 0.2 }}
                 onClick={() => setSelectedReviewModal(rev)}
-                className="w-[85vw] sm:w-[360px] lg:w-[380px] shrink-0 snap-start bg-white rounded border border-cream-300 p-6 sm:p-7 shadow-sm hover:shadow-classic hover:border-gold-400 transition-all flex flex-col justify-between cursor-pointer group"
+                className="w-[85vw] sm:w-[360px] lg:w-[380px] shrink-0 snap-start bg-white rounded-3xl border border-cream-300 p-6 sm:p-7 shadow-sm hover:shadow-xl hover:border-gold-400 transition-all flex flex-col justify-between cursor-pointer group"
               >
                 <div className="space-y-4">
                   {/* Top Row: Stars + Verified Badge */}
@@ -374,7 +374,7 @@ export function HomeReviewsShowcase() {
                       </span>
                     </div>
 
-                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                       <CheckCircle2 className="w-3 h-3 text-emerald-700" />
                       <span>Verified Patron</span>
                     </span>
@@ -391,11 +391,11 @@ export function HomeReviewsShowcase() {
                   </p>
 
                   {/* Ornament Attached */}
-                  <div className="flex items-center gap-3 p-2.5 bg-cream-50 rounded border border-cream-200">
+                  <div className="flex items-center gap-3 p-3 bg-cream-50 rounded-2xl border border-cream-200">
                     <img
                       src={rev.productImage}
                       alt={rev.productName}
-                      className="w-10 h-10 object-cover rounded shrink-0 border border-cream-300"
+                      className="w-11 h-11 object-cover rounded-xl shrink-0 border border-cream-300"
                     />
                     <div className="truncate">
                       <span className="text-[10px] uppercase font-semibold text-gold-700 tracking-wider block">
@@ -450,19 +450,19 @@ export function HomeReviewsShowcase() {
       {/* MODAL 1: Read Full Review Details Dialog */}
       <AnimatePresence>
         {selectedReviewModal && (
-          <div className="fixed inset-0 z-50 overflow-y-auto bg-charcoal-900/75 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-charcoal-900/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-fadeIn">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative bg-white w-full max-w-xl rounded border border-cream-300 shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6"
+              className="relative bg-white w-full max-w-xl rounded-3xl border border-gold-400/30 shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6"
             >
               {/* Top Banner */}
               <div className="flex items-start justify-between pb-4 border-b border-cream-200">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-800 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3 text-emerald-700" />
                       <span>Verified Royal Patron</span>
                     </span>
@@ -474,7 +474,7 @@ export function HomeReviewsShowcase() {
                 </div>
                 <button
                   onClick={() => setSelectedReviewModal(null)}
-                  className="p-1.5 rounded-full text-charcoal-500 hover:text-charcoal-900 hover:bg-cream-100"
+                  className="p-1.5 rounded-full text-charcoal-500 hover:text-charcoal-900 hover:bg-cream-100 transition-colors"
                   aria-label="Close review dialog"
                 >
                   <X className="w-5 h-5" />
@@ -504,17 +504,17 @@ export function HomeReviewsShowcase() {
               </div>
 
               {/* Full Comment */}
-              <div className="p-4 bg-cream-50 rounded border border-cream-200 text-xs sm:text-sm text-charcoal-700 leading-relaxed font-light">
+              <div className="p-4 bg-cream-50 rounded-2xl border border-cream-200 text-xs sm:text-sm text-charcoal-700 leading-relaxed font-light">
                 <Quote className="w-6 h-6 text-gold-500/40 mb-2" />
                 <p>{selectedReviewModal.comment}</p>
               </div>
 
               {/* Product preview */}
-              <div className="flex items-center gap-3 p-3 bg-white rounded border border-cream-300">
+              <div className="flex items-center gap-3 p-3 bg-white rounded-2xl border border-cream-300">
                 <img
                   src={selectedReviewModal.productImage}
                   alt={selectedReviewModal.productName}
-                  className="w-14 h-14 object-cover rounded border border-cream-300 shrink-0"
+                  className="w-14 h-14 object-cover rounded-xl border border-cream-300 shrink-0"
                 />
                 <div>
                   <span className="text-[10px] uppercase font-bold text-gold-700 tracking-wider block">
@@ -562,7 +562,7 @@ export function HomeReviewsShowcase() {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="relative bg-white w-full max-w-lg rounded border border-cream-300 shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6"
+              className="relative bg-white w-full max-w-lg rounded-3xl border border-gold-400/30 shadow-2xl overflow-hidden p-6 sm:p-8 space-y-6"
             >
               <div className="flex items-center justify-between pb-4 border-b border-cream-200">
                 <div>
@@ -575,7 +575,7 @@ export function HomeReviewsShowcase() {
                 </div>
                 <button
                   onClick={() => setIsWriteReviewOpen(false)}
-                  className="p-1 text-charcoal-500 hover:text-charcoal-900"
+                  className="p-1.5 rounded-full text-charcoal-500 hover:text-charcoal-900 hover:bg-cream-100 transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -593,7 +593,7 @@ export function HomeReviewsShowcase() {
                       placeholder="e.g. Sanyukta Rathore"
                       value={newAuthor}
                       onChange={(e) => setNewAuthor(e.target.value)}
-                      className="w-full px-3 py-2 bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                     />
                   </div>
 
@@ -607,7 +607,7 @@ export function HomeReviewsShowcase() {
                       placeholder="e.g. Jaipur, Rajasthan"
                       value={newCity}
                       onChange={(e) => setNewCity(e.target.value)}
-                      className="w-full px-3 py-2 bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                     />
                   </div>
                 </div>
@@ -620,7 +620,7 @@ export function HomeReviewsShowcase() {
                     <select
                       value={newCategory}
                       onChange={(e) => setNewCategory(e.target.value as any)}
-                      className="w-full px-3 py-2 bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                      className="w-full px-3.5 py-2.5 bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                     >
                       <option value="Ladies Ornaments">Ladies Ornaments</option>
                       <option value="Gents Ornaments">Gents Ornaments</option>
@@ -662,7 +662,7 @@ export function HomeReviewsShowcase() {
                     placeholder="e.g. Impeccable weight and luster for ₹99"
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
-                    className="w-full px-3 py-2 bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                   />
                 </div>
 
@@ -676,7 +676,7 @@ export function HomeReviewsShowcase() {
                     placeholder="Tell patrons about the craftsmanship, polish durability, transit packaging, and wholesale value..."
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
-                    className="w-full px-3 py-2 bg-cream-50 border border-cream-300 rounded focus:border-gold-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-cream-50 border border-cream-300 rounded-xl focus:border-gold-500 focus:outline-none"
                   />
                 </div>
 
@@ -684,13 +684,13 @@ export function HomeReviewsShowcase() {
                   <button
                     type="button"
                     onClick={() => setIsWriteReviewOpen(false)}
-                    className="px-4 py-2 bg-cream-200 text-charcoal-800 uppercase tracking-wider font-semibold rounded"
+                    className="px-4 py-2.5 bg-cream-200 text-charcoal-800 uppercase tracking-wider font-semibold rounded-xl hover:bg-cream-300 transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-5 py-2 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 uppercase tracking-wider font-semibold rounded flex items-center gap-1.5"
+                    className="px-5 py-2.5 bg-charcoal-900 hover:bg-charcoal-850 text-cream-100 uppercase tracking-wider font-semibold rounded-xl shadow-md transition-all flex items-center gap-1.5"
                   >
                     <span>Publish Feedback</span>
                     <ArrowRight className="w-3.5 h-3.5 text-gold-400" />
